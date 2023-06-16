@@ -1,3 +1,10 @@
+# Custom
+build/
+.vscode/
+debug.cfg
+debug_custom.json
+esp32.svd
+
 # Prerequisites
 *.d
 
