@@ -13,6 +13,7 @@ int atem_pvw1_input_id = 0;
 void webSockets_setup();
 void webSockets_onLoop();
 void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length);
+void webSockets_onTally(DynamicJsonDocument doc);
 
 
 void webSockets_onLoop() {
@@ -51,16 +52,16 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             
         case WStype_TEXT: {
         
-            /*DynamicJsonDocument doc(length);
+            DynamicJsonDocument doc(length);
             DeserializationError error = deserializeJson(doc, payload, length);
             const char* MessageType = doc["MessageType"];
 
             if (MessageType == nullptr) {
-                Serial.print("MessageType is nullptr");
+                Serial.print(F("MessageType is nullptr"));
                 return;
             } else if (strcmp(MessageType, "Tally") == 0) {
-                webSocketOnTextTally(doc);
-            }*/
+                webSockets_onTally(doc);
+            }
             
             break;
         }
@@ -79,5 +80,28 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         case WStype_FRAGMENT_FIN:
             break;
     }
+
+}
+
+
+void webSockets_onTally(DynamicJsonDocument doc) {
+
+    const char* Source = doc["deviceId"];
+    const char* EventType = doc["MessageData"]["EventType"];
+    int EventValue;
+
+    if (Source == nullptr || EventType == nullptr) {
+        return;
+    } else if (strcmp(EventType, "atem_pgm1_input_id") == 0) {
+        EventValue = doc["MessageData"][EventType];
+        atem_pgm1_input_id = EventValue;
+    } else if (strcmp(EventType, "atem_pvw1_input_id") == 0) {
+        EventValue = doc["MessageData"][EventType];
+        atem_pvw1_input_id = EventValue;
+    }
+    
+    Serial.println(Source);
+    Serial.println(EventType);
+    Serial.printf("EventValue: %i\n", EventValue);
 
 }

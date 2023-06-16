@@ -8,8 +8,8 @@ This project is currently in early development and not yet functional.
 First Milestones (July 2023):
 - [ x ] WiFi & NTP
 - [ x ] Initial websockets interface with Node-RED
-- [   ] Node-RED dashboard to show tally status, messages, etc
-- [   ] Basic tally light functionality
+- [wip] Node-RED dashboard to show tally status, messages, etc
+- [ x ] Basic tally light functionality
 - [   ] M5StickC-Plus basic power management
 
 Secondary Goals:
