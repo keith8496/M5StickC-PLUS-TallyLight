@@ -1,5 +1,6 @@
 #include <M5StickCPlus.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>
+#include <millisDelay.h>
 
 void WiFiEvent(WiFiEvent_t event);
 void saveParamCallback();
@@ -146,7 +147,7 @@ void WiFiEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_ETH_STOP:
           Serial.println("Ethernet stopped");
-          break;
+          break;`
       
       case ARDUINO_EVENT_ETH_CONNECTED:
           Serial.println("Ethernet connected");
@@ -168,5 +169,21 @@ void WiFiEvent(WiFiEvent_t event){
 
 
 void saveParamCallback () {
+
+}
+
+
+void setNtpTime(millisDelay* md) {
+
+    configTime(-21600, 3600, "time.apple.com");
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        Serial.println(F("Failed to obtain time"));
+        md->repeat();
+        return;
+    }
+    
+    md->stop();
+    Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
 
 }

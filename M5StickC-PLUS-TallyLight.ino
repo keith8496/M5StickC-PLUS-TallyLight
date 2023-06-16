@@ -2,8 +2,7 @@
 #include "NetworkModule.h"
 #include <millisDelay.h>
 
-millisDelay setTimeDelay;
-void setTime();
+millisDelay delay_setNtpTime;
 
 
 void setup () {
@@ -19,27 +18,11 @@ void setup () {
     M5.Lcd.println(F("Booting..."));
 
     setupWiFi();
-    setTimeDelay.start(1000);
+    delay_setNtpTime.start(1000);
 }
 
 void loop () {
 
-    if (setTimeDelay.justFinished()) setTime();
-
-}
-
-
-void setTime() {
-    
-    configTime(-21600, 3600, "time.apple.com");
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        Serial.println(F("Failed to obtain time"));
-        setTimeDelay.repeat();
-        return;
-    }
-    
-    setTimeDelay.stop();
-    Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
+    if (delay_setNtpTime.justFinished()) setNtpTime(&delay_setNtpTime);
 
 }
