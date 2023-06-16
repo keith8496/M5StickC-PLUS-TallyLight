@@ -1,6 +1,5 @@
 #include <M5StickCPlus.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-#include <time.h>
 
 void WiFiEvent(WiFiEvent_t event);
 void saveParamCallback();
@@ -67,13 +66,9 @@ void WiFiEvent(WiFiEvent_t event){
           Serial.println("WiFi clients stopped");
           break;*/
       
-      case ARDUINO_EVENT_WIFI_STA_CONNECTED:
-          
+      case ARDUINO_EVENT_WIFI_STA_CONNECTED:          
           Serial.println(F("Connected to access point"));
-          M5.Lcd.println(F("Connected to access point"));
-          
-          //setupWebSockets();  
-          
+          M5.Lcd.println(F("Connected to access point"));          
           break;
 
       case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -85,20 +80,8 @@ void WiFiEvent(WiFiEvent_t event){
           break;*/
       
       case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-          
-          Serial.print("Obtained IP address: ");
-          Serial.println(WiFi.localIP());
-          
-          configTime(-21600, 3600, "time.apple.com");
-          struct tm timeinfo;
-          if (!getLocalTime(&timeinfo)) {
-              Serial.println(F("Failed to obtain time"));
-              M5.Lcd.println(F("Failed to obtain time"));
-              return;
-          }
-          Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
-          M5.Lcd.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
-          
+          Serial.print(F("Obtained IP address: "));
+          Serial.println(WiFi.localIP());       
           break;
       
       case ARDUINO_EVENT_WIFI_STA_LOST_IP:
