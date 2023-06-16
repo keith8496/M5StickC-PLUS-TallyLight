@@ -1,6 +1,7 @@
 #include <WebSocketsClient.h>
 #include <millisDelay.h>
 #include <ArduinoJson.h>
+#include "PrefsModule.h"
 
 WebSocketsClient ws;
 
@@ -20,11 +21,7 @@ void webSockets_onLoop() {
 
 
 void webSockets_setup() {
-  
-  const char nodeRED_ServerIP[16] = "192.168.13.54";
-  const int nodeRED_ServerPort = 1880;
-  const char nodeRED_ServerUrl[33] = "/ws/tally";
-  
+    
   Serial.println(F("Attempting to connect to websockets..."));
   ws.onEvent(webSockets_onEvent);
   ws.setReconnectInterval(5000);

@@ -1,6 +1,7 @@
 #include <M5StickCPlus.h>
 #include "NetworkModule.h"
 #include "WebSocketsModule.h"
+#include "PrefsModule.h"
 
 
 void setup () {
@@ -15,6 +16,7 @@ void setup () {
     M5.Lcd.setRotation(3);
     M5.Lcd.println(F("Booting..."));
 
+    preferences_setup();
     WiFi_setup();
     webSockets_setup();
 
@@ -22,7 +24,13 @@ void setup () {
 
 void loop () {
 
+    M5.update();
     WiFi_onLoop();
     webSockets_onLoop();
+
+    // M5 Button
+    if (M5.BtnA.wasReleased()) {
+        WiFi_toggleWebPortal();
+    } 
 
 }

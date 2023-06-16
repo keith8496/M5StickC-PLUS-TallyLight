@@ -1,26 +1,46 @@
 #include <M5StickCPlus.h>
 #include <WiFiManager.h>
 #include <millisDelay.h>
+#include "PrefsModule.h"
 
 WiFiManager wm;
 millisDelay md_setNtpTime;
+
+// Parameters
+WiFiManagerParameter wm_friendlyName("friendlyName", "Friendly Name");
+WiFiManagerParameter wm_inputIds("inputIds", "Input IDs (0000000000000001)");
+WiFiManagerParameter wm_nodeRED_ServerIP("nr_ServerIP", "Node-RED Server IP");
+WiFiManagerParameter wm_nodeRED_ServerPort("nr_ServerPort", "Node-RED Server Port");
+WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
+WiFiManagerParameter wm_gmtOffset_sec("gmtOffset_sec", "GMT Offset Seconds");
+WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Seconds");
+
 
 // Define Functions
 void WiFi_setup();
 void WiFi_onLoop();
 void WiFi_onEvent(WiFiEvent_t event);
-void saveParamCallback();
+void WiFi_onSaveParams();
+
+
+// temp
+void WiFi_toggleWebPortal() {
+    if (wm.getWebPortalActive()) {
+        wm.stopWebPortal();
+        M5.Lcd.println(F("Webportal stopped"));
+    } else {
+        wm.startWebPortal();
+        M5.Lcd.println(F("Webportal started"));
+    }
+}
 
 
 void WiFi_onLoop() {
     
     if (wm.getWebPortalActive()) wm.process();
     
-    if (md_setNtpTime.justFinished()) {
-        const long gmtOffset_sec = -21600;
-        const int daylightOffset_sec = 3600;
-        const char* server1 = "time.apple.com";                
-        configTime(gmtOffset_sec, daylightOffset_sec, server1);
+    if (md_setNtpTime.justFinished()) {               
+        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo)) {
             Serial.println(F("Failed to obtain time"));
@@ -45,11 +65,36 @@ void WiFi_setup () {
     strcpy(deviceName, "M5StickC-Plus-");
     strcat(deviceName, deviceId);
 
+    
+    // wm_addParameters
+    wm.addParameter(&wm_friendlyName);
+    wm.addParameter(&wm_inputIds);
+    wm.addParameter(&wm_nodeRED_ServerIP);
+    wm.addParameter(&wm_nodeRED_ServerPort);
+    wm.addParameter(&wm_ntpServer);
+    wm.addParameter(&wm_gmtOffset_sec);
+    wm.addParameter(&wm_daylightOffset_sec);
+    
+    // set wm values
+    char buff[17];
+    wm_friendlyName.setValue(friendlyName, sizeof(friendlyName));
+    ultoa(inputIds, buff, 2);
+    wm_inputIds.setValue(buff, sizeof(buff));
+    wm_nodeRED_ServerIP.setValue(nodeRED_ServerIP, sizeof(nodeRED_ServerIP));
+    itoa(nodeRED_ServerPort, buff, 10);
+    wm_nodeRED_ServerPort.setValue(buff, sizeof(buff));
+    wm_ntpServer.setValue(ntpServer, sizeof(ntpServer));
+    itoa(gmtOffset_sec, buff, 10);
+    wm_gmtOffset_sec.setValue(buff, sizeof(wm_gmtOffset_sec));
+    itoa(daylightOffset_sec, buff, 10);
+    wm_daylightOffset_sec.setValue(buff, sizeof(wm_daylightOffset_sec));
+
+    
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
     wm.setConfigPortalBlocking(false);    
     wm.setDebugOutput(false);
-    wm.setSaveParamsCallback(saveParamCallback);
+    wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert"); // set dark theme
     wm.setCountry("US");
     
@@ -195,6 +240,6 @@ void WiFi_onEvent(WiFiEvent_t event){
 }
 
 
-void saveParamCallback () {
+void WiFi_onSaveParams() {
 
 }
