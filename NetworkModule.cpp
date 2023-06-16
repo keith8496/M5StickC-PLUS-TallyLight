@@ -12,18 +12,21 @@ void WiFi_onEvent(WiFiEvent_t event);
 void saveParamCallback();
 
 
-void WiFi_loop() {
+void WiFi_onLoop() {
     
     if (wm.getWebPortalActive()) wm.process();
     
     if (md_setNtpTime.justFinished()) {
-        configTime(-21600, 3600, "time.apple.com");
+        const long gmtOffset_sec = -21600;
+        const int daylightOffset_sec = 3600;
+        const char* server1 = "time.apple.com";                
+        configTime(gmtOffset_sec, daylightOffset_sec, server1);
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo)) {
             Serial.println(F("Failed to obtain time"));
             md_setNtpTime.repeat();
             return;
-        }
+        }        
         md_setNtpTime.stop();
         Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
     }

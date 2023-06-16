@@ -10,7 +10,8 @@ int atem_pvw1_input_id = 0;
 
 // Define Functions
 void webSockets_setup();
-void webSockets_event(WStype_t type, uint8_t* payload, size_t length);
+void webSockets_onLoop();
+void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length);
 
 
 void webSockets_onLoop() {
@@ -18,21 +19,22 @@ void webSockets_onLoop() {
 }
 
 
-void setupWebSockets() {
+void webSockets_setup() {
   
-  char nodeRED_ServerIP[40] = "192.168.13.54";
-  char nodeRED_ServerPort[6] = "1880";
+  const char nodeRED_ServerIP[16] = "192.168.13.54";
+  const int nodeRED_ServerPort = 1880;
+  const char nodeRED_ServerUrl[33] = "/ws/tally";
   
   Serial.println(F("Attempting to connect to websockets..."));
-  ws.begin(nodeRED_ServerIP, atoi(nodeRED_ServerPort), "/ws/tally");
+  ws.onEvent(webSockets_onEvent);
   ws.setReconnectInterval(5000);
-  ws.onEvent(webSockets_event);
-  //ws.enableHeartbeat(60000, 1000, 60);
+  ws.enableHeartbeat(60000, 1000, 60);
+  ws.begin(nodeRED_ServerIP, nodeRED_ServerPort, nodeRED_ServerUrl);
 
 }
 
 
-void webSockets_event(WStype_t type, uint8_t* payload, size_t length) {
+void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
 
     switch(type) {
 	
@@ -69,11 +71,11 @@ void webSockets_event(WStype_t type, uint8_t* payload, size_t length) {
         case WStype_BIN:
             break;
         case WStype_PING:
-        Serial.println("Websockets PING.");
-        break;
+            Serial.println("Websockets PING.");
+            break;
         case WStype_PONG:
-        Serial.println("Websockets PONG.");
-        break;
+            Serial.println("Websockets PONG.");
+            break;
         case WStype_FRAGMENT_TEXT_START:
         case WStype_FRAGMENT_BIN_START:
         case WStype_FRAGMENT:
