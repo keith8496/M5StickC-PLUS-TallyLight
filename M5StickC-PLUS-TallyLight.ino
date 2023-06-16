@@ -1,8 +1,6 @@
 #include <M5StickCPlus.h>
 #include "NetworkModule.h"
-#include <millisDelay.h>
-
-millisDelay delay_setNtpTime;
+#include "WebSocketsModule.h"
 
 
 void setup () {
@@ -17,12 +15,14 @@ void setup () {
     M5.Lcd.setRotation(3);
     M5.Lcd.println(F("Booting..."));
 
-    setupWiFi();
-    delay_setNtpTime.start(1000);
+    WiFi_setup();
+    webSockets_setup();
+
 }
 
 void loop () {
 
-    if (delay_setNtpTime.justFinished()) setNtpTime(&delay_setNtpTime);
+    WiFi_onLoop();
+    webSockets_onLoop();
 
 }

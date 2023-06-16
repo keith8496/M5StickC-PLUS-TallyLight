@@ -2,22 +2,45 @@
 #include <WiFiManager.h>
 #include <millisDelay.h>
 
-void WiFiEvent(WiFiEvent_t event);
+WiFiManager wm;
+millisDelay md_setNtpTime;
+
+// Define Functions
+void WiFi_setup();
+void WiFi_onLoop();
+void WiFi_onEvent(WiFiEvent_t event);
 void saveParamCallback();
 
 
-void setupWiFi () {
+void WiFi_loop() {
+    
+    if (wm.getWebPortalActive()) wm.process();
+    
+    if (md_setNtpTime.justFinished()) {
+        configTime(-21600, 3600, "time.apple.com");
+        struct tm timeinfo;
+        if (!getLocalTime(&timeinfo)) {
+            Serial.println(F("Failed to obtain time"));
+            md_setNtpTime.repeat();
+            return;
+        }
+        md_setNtpTime.stop();
+        Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
+    }
+
+}
+
+
+void WiFi_setup () {
 
     WiFi.mode(WIFI_STA);
-    WiFi.onEvent(WiFiEvent);
+    WiFi.onEvent(WiFi_onEvent);
     
     char deviceId[9];
     char deviceName[33];
     ultoa(WIFI_getChipId(), deviceId, 16);
     strcpy(deviceName, "M5StickC-Plus-");
     strcat(deviceName, deviceId);
-
-    WiFiManager wm;
 
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
@@ -41,11 +64,12 @@ void setupWiFi () {
     }
 
     M5.Lcd.println(wm.getWLStatusString());
+    md_setNtpTime.start(1000);
     
 }
 
 
-void WiFiEvent(WiFiEvent_t event){
+void WiFi_onEvent(WiFiEvent_t event){
   
   //Serial.printf("[WiFi-event] event: %d\n", event);
 
@@ -169,21 +193,5 @@ void WiFiEvent(WiFiEvent_t event){
 
 
 void saveParamCallback () {
-
-}
-
-
-void setNtpTime(millisDelay* md) {
-
-    configTime(-21600, 3600, "time.apple.com");
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        Serial.println(F("Failed to obtain time"));
-        md->repeat();
-        return;
-    }
-    
-    md->stop();
-    Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
 
 }

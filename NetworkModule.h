@@ -1,3 +1,2 @@
-#include <millisDelay.h>
-void setupWiFi();
-void setNtpTime(millisDelay* md);
+void WiFi_setup();
+void WiFi_onLoop();
