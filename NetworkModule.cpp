@@ -72,16 +72,7 @@ void WiFiEvent(WiFiEvent_t event){
           Serial.println(F("Connected to access point"));
           M5.Lcd.println(F("Connected to access point"));
           
-          //updateTime();
           //setupWebSockets();  
-          
-          configTime(-21600, 3600, "time.apple.com");
-            struct tm timeinfo;
-            if (!getLocalTime(&timeinfo)) {
-                M5.Lcd.println("Failed to obtain time");
-                return;
-            }
-            Serial.println(&timeinfo, "%A, %B %d \n%Y %H:%M:%S");
           
           break;
 
@@ -94,8 +85,20 @@ void WiFiEvent(WiFiEvent_t event){
           break;*/
       
       case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+          
           Serial.print("Obtained IP address: ");
           Serial.println(WiFi.localIP());
+          
+          configTime(-21600, 3600, "time.apple.com");
+          struct tm timeinfo;
+          if (!getLocalTime(&timeinfo)) {
+              Serial.println(F("Failed to obtain time"));
+              M5.Lcd.println(F("Failed to obtain time"));
+              return;
+          }
+          Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
+          M5.Lcd.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
+          
           break;
       
       case ARDUINO_EVENT_WIFI_STA_LOST_IP:
