@@ -14,7 +14,7 @@ char ntpServer[33];
 
 
 void preferences_setup() {
-    preferences.begin("M5StickC-PLUS-TallyLight", false);
+    preferences.begin("custom", true);
     strcpy(friendlyName, preferences.getString("friendlyName", "CamX").c_str());
     if (preferences.getBytesLength("inputIds") > 0) preferences.getBytes("inputIds", &inputIds, 2);
     strcpy(nodeRED_ServerIP, preferences.getString("nr_ServerIP", "192.168.13.54").c_str());
@@ -28,5 +28,16 @@ void preferences_setup() {
 
 
 void preferences_save() {
+
+    preferences.begin("custom", false);
+    preferences.putString("friendlyName", friendlyName);
+    preferences.putBytes("inputIds", &inputIds, 2);
+    preferences.putString("nr_ServerIP", nodeRED_ServerIP);
+    preferences.putInt("nr_ServerPort", nodeRED_ServerPort);
+    preferences.putString("nr_ServerUrl", nodeRED_ServerUrl);
+    preferences.putString("ntpServer", ntpServer);
+    preferences.putInt("gmtOffset_sec", gmtOffset_sec);
+    preferences.putInt("daylightOffset", daylightOffset_sec);
+    preferences.end();
     
 }
