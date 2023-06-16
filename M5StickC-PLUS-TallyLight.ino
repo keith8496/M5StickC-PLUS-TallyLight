@@ -2,6 +2,7 @@
 #include "NetworkModule.h"
 #include "WebSocketsModule.h"
 #include "PrefsModule.h"
+#include "ScreenModule.h"
 
 
 void setup () {
@@ -30,7 +31,17 @@ void loop () {
 
     // M5 Button
     if (M5.BtnA.wasReleased()) {
-        WiFi_toggleWebPortal();
-    } 
+        //WiFi_toggleWebPortal();
+        if (currentScreen == 3) currentScreen = 0;  // reset
+        currentScreen = currentScreen + 1;
+        changeScreen();
+    }
+
+    // Action Button
+    if (M5.BtnB.wasReleased()) {
+        M5.Lcd.fillScreen(TFT_BLACK);
+    }
+
+    refreshScreen();
 
 }

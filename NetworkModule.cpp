@@ -24,18 +24,6 @@ void WiFi_onEvent(WiFiEvent_t event);
 void WiFi_onSaveParams();
 
 
-// temp
-void WiFi_toggleWebPortal() {
-    if (wm.getWebPortalActive()) {
-        wm.stopWebPortal();
-        M5.Lcd.println(F("Webportal stopped"));
-    } else {
-        wm.startWebPortal();
-        M5.Lcd.println(F("Webportal started"));
-    }
-}
-
-
 void WiFi_onLoop() {
     
     if (wm.getWebPortalActive()) wm.process();
