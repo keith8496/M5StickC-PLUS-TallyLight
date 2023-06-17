@@ -4,31 +4,50 @@
 #include "PrefsModule.h"
 #include "PowerModule.h"
 #include "ScreenModule.h"
+#include "millisDelay.h"
+
+millisDelay ms_startup;
 
 
 void setup () {
 
-    Serial.begin(115200);
-    
     M5.begin();
     setCpuFrequencyMhz(80); //Save battery by turning down the CPU clock
     btStop();               //Save battery by turning off Bluetooth
 
-    M5.Lcd.setTextSize(1.5);
+    ms_startup.start(30000);
+
+    currentScreen = 0;      // boot screen
     M5.Lcd.setRotation(3);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setTextWrap(true);
     M5.Lcd.println(F("Starting..."));
 
+    M5.Lcd.println(F("Initializing preferences..."));
     preferences_setup();
+    
+    M5.Lcd.println(F("Initializing power management..."));
     power_setup();
+    
+    M5.Lcd.println(F("Initializing WiFi..."));
     WiFi_setup();
+    
+    M5.Lcd.println(F("Initializing webSockets..."));
     webSockets_setup();
 
-    currentScreen = 0;
-    currentBrightness = 9;
-    M5.Lcd.println();
-    M5.Lcd.println(F("Startup complete."));
-    M5.Lcd.println(F("Press \"M5\" button to continue."));
+    while (ms_startup.isRunning()) {
+        WiFi_onLoop();
+        webSockets_onLoop();
+        power_onLoop();
+        if (ws_isConnected & time_isSet) ms_startup.stop();
+    }
 
+    M5.Lcd.println();
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.println(F("Startup complete."));
+    M5.Lcd.println(F("Press \"M5\" button \r\nto continue."));
+    M5.Lcd.println();
+    
 }
 
 void loop () {
@@ -40,7 +59,6 @@ void loop () {
 
     // M5 Button
     if (M5.BtnA.wasReleased()) {
-        //WiFi_toggleWebPortal();
         if (currentScreen == 3) currentScreen = 0;  // reset
         currentScreen = currentScreen + 1;
         changeScreen();
@@ -48,7 +66,7 @@ void loop () {
 
     // Action Button
     if (M5.BtnB.wasReleased()) {
-        M5.Lcd.fillScreen(TFT_BLACK);
+        setBrightness(0);
     }
 
     refreshScreen();

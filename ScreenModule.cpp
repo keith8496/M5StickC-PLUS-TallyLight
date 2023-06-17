@@ -5,8 +5,8 @@
 #include "NetworkModule.h"
 #include "PowerModule.h"
 
-int currentScreen = 1;          // 1-Tally, 2-Power, 3-Setup
-int currentBrightness;
+int currentScreen;              // 1-Tally, 2-Power, 3-Setup
+int currentBrightness = 11;     // default 11, max 12
 
 TFT_eSprite tallyScreen = TFT_eSprite(&M5.Lcd);
 TFT_eSprite powerScreen = TFT_eSprite(&M5.Lcd);
@@ -79,7 +79,7 @@ void refreshTallyScreen() {
 
 void refreshPowerScreen() {
 
-    powerScreen.fillSprite(BLACK);
+    powerScreen.fillSprite(TFT_BLACK);
     powerScreen.setTextColor(TFT_WHITE);
     powerScreen.setCursor(0,0);
     powerScreen.setTextSize(2);
@@ -102,8 +102,9 @@ void refreshPowerScreen() {
 
 void refreshSetupScreen() {
     
-    setupScreen.setCursor(0,0);
+    setupScreen.fillSprite(TFT_BLACK);
     setupScreen.setTextColor(TFT_WHITE);
+    setupScreen.setCursor(0,0);
     setupScreen.setTextSize(2);
     setupScreen.println(F("Setup Screen"));
     setupScreen.println();
@@ -112,8 +113,10 @@ void refreshSetupScreen() {
     setupScreen.println("Webportal Active: " + String(wm.getWebPortalActive()));
     setupScreen.println("Hostname: " + wm.getWiFiHostname());
     setupScreen.println("IP: " + WiFi.localIP().toString());
+    setupScreen.println("NTP: " + String(time_isSet));
     setupScreen.println();
     setupScreen.println("Node-RED Server: " + String(nodeRED_ServerIP) + ":" + String(nodeRED_ServerPort));
+    setupScreen.println("Connected: " + String(ws_isConnected));
     setupScreen.pushSprite(10,10);
 
 }
@@ -161,3 +164,12 @@ void refreshScreen() {
 }
 
 
+void setBrightness(int newBrightness = 0) {
+    if (newBrightness >= 7 & newBrightness <= pwr.maxBrightness) {
+        currentBrightness = newBrightness;
+    } else {
+        currentBrightness++;
+        if (currentBrightness > pwr.maxBrightness) currentBrightness = 7;
+    }
+    M5.Axp.ScreenBreath(currentBrightness);
+}

@@ -1,3 +1,4 @@
+extern bool ws_isConnected;
 extern int atem_pgm1_input_id;
 extern int atem_pvw1_input_id;
 

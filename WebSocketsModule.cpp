@@ -1,9 +1,12 @@
+#include <M5StickCPlus.h>
 #include <WebSocketsClient.h>
 #include <millisDelay.h>
 #include <ArduinoJson.h>
 #include "PrefsModule.h"
+#include "ScreenModule.h"
 
 WebSocketsClient ws;
+bool ws_isConnected = false;
 
 int atem_pgm1_input_id = 0;
 int atem_pvw1_input_id = 0;
@@ -29,6 +32,7 @@ void webSockets_setup() {
   ws.setReconnectInterval(5000);
   ws.enableHeartbeat(60000, 1000, 60);
   ws.begin(nodeRED_ServerIP, nodeRED_ServerPort, nodeRED_ServerUrl);
+  ws.loop();
 
 }
 
@@ -42,11 +46,14 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         break;
         
         case WStype_DISCONNECTED:
+            ws_isConnected = false;
             Serial.println("Websockets disconnected.");
             break;
         
         case WStype_CONNECTED:
+            ws_isConnected = true;
             Serial.println("Websockets connected.");
+            if (currentScreen == 0) M5.Lcd.println("Websockets connected.");
             webSockets_getTally();
             break;
             
@@ -67,13 +74,8 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         }
         
         case WStype_BIN:
-            break;
         case WStype_PING:
-            Serial.println("Websockets PING.");
-            break;
         case WStype_PONG:
-            Serial.println("Websockets PONG.");
-            break;
         case WStype_FRAGMENT_TEXT_START:
         case WStype_FRAGMENT_BIN_START:
         case WStype_FRAGMENT:

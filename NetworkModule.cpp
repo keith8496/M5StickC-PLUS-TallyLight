@@ -3,6 +3,7 @@
 #include <millisDelay.h>
 #include "PrefsModule.h"
 #include "WebSocketsModule.h"
+#include "ScreenModule.h"
 
 WiFiManager wm;
 millisDelay md_setNtpTime;
@@ -19,6 +20,7 @@ WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Se
 
 char deviceId[9];
 char deviceName[33];
+bool time_isSet = false;
 
 
 // Define Functions
@@ -33,15 +35,18 @@ void WiFi_onLoop() {
     if (wm.getWebPortalActive()) wm.process();
     
     if (md_setNtpTime.justFinished()) {               
+        if (currentScreen == 0) M5.Lcd.println("Initializing NTP...");
         configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo)) {
             Serial.println(F("Failed to obtain time"));
             md_setNtpTime.repeat();
             return;
-        }        
+        }       
+        time_isSet = true; 
         md_setNtpTime.stop();
         Serial.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
+        if (currentScreen == 0) M5.Lcd.println(&timeinfo, "%A %B %d, %Y %H:%M:%S");
     }
 
 }
@@ -91,7 +96,6 @@ void WiFi_setup () {
     wm.setClass("invert"); // set dark theme
     wm.setCountry("US");
     
-    M5.Lcd.println(F("Starting WiFi..."));
     if (!wm.autoConnect(deviceName)) {
         M5.Lcd.println(F("Config Portal Active"));
         while (wm.getConfigPortalActive()) {
@@ -104,7 +108,6 @@ void WiFi_setup () {
         M5.Lcd.println(F("Config Portal Closed"));
     }
 
-    M5.Lcd.println(wm.getWLStatusString());
     md_setNtpTime.start(1000);
     
 }
@@ -134,7 +137,7 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_WIFI_STA_CONNECTED:          
           Serial.println(F("Connected to access point"));
-          M5.Lcd.println(F("Connected to access point"));          
+          if (currentScreen == 0) M5.Lcd.println(F("Connected to access point"));          
           break;
 
       case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -147,7 +150,11 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_WIFI_STA_GOT_IP:
           Serial.print(F("Obtained IP address: "));
-          Serial.println(WiFi.localIP());       
+          Serial.println(WiFi.localIP());
+          if (currentScreen == 0) {
+            M5.Lcd.print(F("Obtained IP address: "));
+            M5.Lcd.println(WiFi.localIP());
+          }
           break;
       
       case ARDUINO_EVENT_WIFI_STA_LOST_IP:

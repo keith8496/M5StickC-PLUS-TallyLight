@@ -119,10 +119,7 @@ void doPowerManagement() {
     } else {
       strcpy(pwr.powerMode, "Power Saver");
       pwr.maxBrightness = 9;
-      if (currentBrightness > pwr.maxBrightness) {
-        currentBrightness = pwr.maxBrightness;
-        M5.Axp.ScreenBreath(currentBrightness);
-      }
+      if (currentBrightness > pwr.maxBrightness) setBrightness(pwr.maxBrightness);
       //esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     }
 
