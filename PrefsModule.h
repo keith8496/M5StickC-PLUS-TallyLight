@@ -9,7 +9,7 @@ extern long gmtOffset_sec;
 extern int daylightOffset_sec;
 extern char ntpServer[33];
 
-extern char deviceId[9];
+extern char deviceId[17];
 extern char deviceName[33];
 
 void preferences_setup();
