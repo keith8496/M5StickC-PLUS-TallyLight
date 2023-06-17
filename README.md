@@ -10,7 +10,7 @@ First Milestones (July 2023):
 - [ x ] Initial websockets interface with Node-RED
 - [wip] Node-RED dashboard to show tally status, messages, etc
 - [ x ] Basic tally light functionality
-- [   ] M5StickC-Plus basic power management
+- [ x ] M5StickC-Plus basic power management
 
 Secondary Goals:
 - [   ] Expand on config/parameters with WiFiManager and Node-RED
