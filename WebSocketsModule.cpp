@@ -4,12 +4,16 @@
 #include <ArduinoJson.h>
 #include "PrefsModule.h"
 #include "ScreenModule.h"
+#include "PowerModule.h"
+#include "NetworkModule.h"
 
 WebSocketsClient ws;
 bool ws_isConnected = false;
 
 int atem_pgm1_input_id = 0;
 int atem_pvw1_input_id = 0;
+
+millisDelay md_sendStatus;
 
 
 // Define Functions
@@ -21,6 +25,42 @@ void webSockets_getTally();
 
 
 void webSockets_onLoop() {
+    
+    if (md_sendStatus.justFinished()) {
+        
+        md_sendStatus.repeat();
+        
+        char buff[17];
+        ultoa(inputIds, buff, 2);
+        StaticJsonDocument<512> doc;
+        
+        doc["deviceId"] = deviceId;
+        doc["MessageType"] = "DeviceStatus";
+        doc["MessageData"]["friendlyName"] = friendlyName;
+        doc["MessageData"]["inputIds"] = buff;
+        doc["MessageData"]["batPercentage"] = pwr.batPercentage;
+        doc["MessageData"]["batCurrent"] = pwr.batCurrent;
+        doc["MessageData"]["batChargeCurrent"] = pwr.batChargeCurrent;
+        doc["MessageData"]["maxChargeCurrent"] = pwr.chargeCurrent;
+        doc["MessageData"]["tempInAXP192"] = pwr.tempInAXP192;
+        doc["MessageData"]["powerMode"] = pwr.powerMode;
+        doc["MessageData"]["currentBrightness"] = currentBrightness;
+        doc["MessageData"]["currentScreen"] = currentScreen;
+        doc["MessageData"]["webPortalActive"] = wm.getWebPortalActive();
+        doc["MessageData"]["ntp"] = time_isSet;
+        doc["MessageData"]["ssid"] = String(wm.getWiFiSSID());
+        doc["MessageData"]["rssi"] = String(WiFi.RSSI());
+        doc["MessageData"]["ip"] = WiFi.localIP().toString();
+        doc["MessageData"]["hostname"] = wm.getWiFiHostname();
+
+        String json;
+        json.reserve(512);
+        serializeJson(doc, json);
+        Serial.println(json);
+        ws.sendTXT(json);
+
+    }
+    
     ws.loop();
 }
 
@@ -55,6 +95,7 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             Serial.println("Websockets connected.");
             if (currentScreen == 0) startupLog("Websockets connected.", 1);
             webSockets_getTally();
+            md_sendStatus.start(60000);
             break;
             
         case WStype_TEXT: {
