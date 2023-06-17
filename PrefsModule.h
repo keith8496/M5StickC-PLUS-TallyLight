@@ -1,3 +1,5 @@
+const char version[9] = "0.9.1";
+
 extern char friendlyName[17];
 extern uint16_t inputIds;
 extern char nodeRED_ServerIP[16];
