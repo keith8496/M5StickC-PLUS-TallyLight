@@ -53,7 +53,7 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         case WStype_CONNECTED:
             ws_isConnected = true;
             Serial.println("Websockets connected.");
-            if (currentScreen == 0) M5.Lcd.println("Websockets connected.");
+            if (currentScreen == 0) startupLog("Websockets connected.", 1);
             webSockets_getTally();
             break;
             
