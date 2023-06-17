@@ -15,11 +15,16 @@ void setup () {
 
     M5.Lcd.setTextSize(1.5);
     M5.Lcd.setRotation(3);
-    M5.Lcd.println(F("Booting..."));
+    M5.Lcd.println(F("Starting..."));
 
     preferences_setup();
     WiFi_setup();
     webSockets_setup();
+
+    currentScreen = 0;
+    M5.Lcd.println();
+    M5.Lcd.println(F("Startup complete."));
+    M5.Lcd.println(F("Press \"M5\" button to continue."));
 
 }
 

@@ -50,7 +50,7 @@ void refreshTallyScreen() {
         tallyScreen.fillRect(0,0,240,135, TFT_BLACK);
     }
 
-    tallyScreen.print("Cam1");
+    tallyScreen.print(friendlyName);
     tallyScreen.pushSprite(0,0);
     
 }
@@ -88,18 +88,19 @@ void showSetupScreen() {
 
 void refreshSetupScreen() {
     
+    setupScreen.setCursor(0,0);
     setupScreen.setTextColor(TFT_WHITE);
-    setupScreen.setCursor(18,10);
     setupScreen.setTextSize(2);
-    setupScreen.println("Setup Screen");
+    setupScreen.println(F("Setup Screen"));
+    setupScreen.println();
     setupScreen.setTextSize(1);
     setupScreen.println("SSID: " + String(wm.getWiFiSSID()) + " " + String(WiFi.RSSI()));
     setupScreen.println("Webportal Active: " + String(wm.getWebPortalActive()));
     setupScreen.println("Hostname: " + wm.getWiFiHostname());
-    setupScreen.println("IP: " + String(WiFi.localIP()));
+    setupScreen.println("IP: " + WiFi.localIP().toString());
     setupScreen.println();
     setupScreen.println("Node-RED Server: " + String(nodeRED_ServerIP) + ":" + String(nodeRED_ServerPort));
-    setupScreen.pushSprite(0,0);
+    setupScreen.pushSprite(10,10);
 
 }
 

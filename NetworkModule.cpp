@@ -2,6 +2,7 @@
 #include <WiFiManager.h>
 #include <millisDelay.h>
 #include "PrefsModule.h"
+#include "WebSocketsModule.h"
 
 WiFiManager wm;
 millisDelay md_setNtpTime;
@@ -15,6 +16,9 @@ WiFiManagerParameter wm_nodeRED_ServerUrl("nr_ServerUrl", "Node-RED Server URL")
 WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
 WiFiManagerParameter wm_gmtOffset_sec("gmtOffset_sec", "GMT Offset Seconds");
 WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Seconds");
+
+char deviceId[9];
+char deviceName[33];
 
 
 // Define Functions
@@ -48,8 +52,6 @@ void WiFi_setup () {
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFi_onEvent);
     
-    char deviceId[9];
-    char deviceName[33];
     ultoa(WIFI_getChipId(), deviceId, 16);
     strcpy(deviceName, "M5StickC-Plus-");
     strcat(deviceName, deviceId);
@@ -243,5 +245,6 @@ void WiFi_onSaveParams() {
     strcpy(ntpServer, wm_ntpServer.getValue());
 
     preferences_save();
+    webSockets_getTally();
 
 }

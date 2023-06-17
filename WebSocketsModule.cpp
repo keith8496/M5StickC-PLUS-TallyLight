@@ -14,6 +14,7 @@ void webSockets_setup();
 void webSockets_onLoop();
 void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length);
 void webSockets_onTally(DynamicJsonDocument doc);
+void webSockets_getTally();
 
 
 void webSockets_onLoop() {
@@ -45,9 +46,8 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             break;
         
         case WStype_CONNECTED:
-            Serial.println("Websockets connected.");            
-            //ws.sendTXT("{\"deviceId\": \"" + String(deviceId) + "\", " +
-            //                       "\"MessageType\": \"GetConfig\"}");
+            Serial.println("Websockets connected.");
+            webSockets_getTally();
             break;
             
         case WStype_TEXT: {
@@ -59,7 +59,7 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             if (MessageType == nullptr) {
                 Serial.print(F("MessageType is nullptr"));
                 return;
-            } else if (strcmp(MessageType, "Tally") == 0) {
+            } else if (strcmp(MessageType, "SetTally") == 0) {
                 webSockets_onTally(doc);
             }
             
@@ -86,6 +86,10 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
 
 void webSockets_onTally(DynamicJsonDocument doc) {
 
+    /*Serial.println("webSockets_onTally()");
+    serializeJson(doc, Serial);
+    Serial.println();*/
+    
     const char* Source = doc["deviceId"];
     const char* EventType = doc["MessageData"]["EventType"];
     int EventValue;
@@ -99,9 +103,18 @@ void webSockets_onTally(DynamicJsonDocument doc) {
         EventValue = doc["MessageData"][EventType];
         atem_pvw1_input_id = EventValue;
     }
-    
-    Serial.println(Source);
-    Serial.println(EventType);
-    Serial.printf("EventValue: %i\n", EventValue);
 
+    /*Serial.print("Source: ");
+    Serial.println(Source);
+    Serial.print("EventType: ");
+    Serial.println(EventType);
+    Serial.print("EventValue: ");
+    Serial.println(EventValue);*/
+
+}
+
+
+void webSockets_getTally() {
+    ws.sendTXT("{\"deviceId\": \"" + String(deviceId) + "\", " +
+                "\"MessageType\": \"GetTally\"}");
 }
