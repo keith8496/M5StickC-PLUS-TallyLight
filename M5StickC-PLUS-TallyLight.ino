@@ -2,6 +2,7 @@
 #include "NetworkModule.h"
 #include "WebSocketsModule.h"
 #include "PrefsModule.h"
+#include "PowerModule.h"
 #include "ScreenModule.h"
 
 
@@ -18,10 +19,12 @@ void setup () {
     M5.Lcd.println(F("Starting..."));
 
     preferences_setup();
+    power_setup();
     WiFi_setup();
     webSockets_setup();
 
     currentScreen = 0;
+    currentBrightness = 9;
     M5.Lcd.println();
     M5.Lcd.println(F("Startup complete."));
     M5.Lcd.println(F("Press \"M5\" button to continue."));
@@ -33,6 +36,7 @@ void loop () {
     M5.update();
     WiFi_onLoop();
     webSockets_onLoop();
+    power_onLoop();
 
     // M5 Button
     if (M5.BtnA.wasReleased()) {
