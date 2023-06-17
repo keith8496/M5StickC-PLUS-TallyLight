@@ -54,6 +54,12 @@ void refreshTallyScreen() {
         tallyScreen.fillRect(0,0,240,135, TFT_BLACK);
     }
     
+    // Battery
+    tallyScreen.setTextSize(1);
+    tallyScreen.setCursor(10,8);
+    tallyScreen.setTextColor(TFT_WHITE, TFT_BLACK);
+    tallyScreen.printf("Bat: %.0f%%", pwr.batPercentage);
+    
     // Clock
     tallyScreen.setTextSize(2);
     tallyScreen.setCursor((tft_width/2)-20, 8);

@@ -5,9 +5,9 @@
 #include "PowerModule.h"
 #include "ScreenModule.h"
 #include "millisDelay.h"
+#include "loopTimer.h"
 
 millisDelay ms_startup;
-
 
 void setup () {
 
