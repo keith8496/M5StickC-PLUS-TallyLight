@@ -12,27 +12,21 @@ millisDelay ms_startup;
 void setup () {
 
     M5.begin();
+    M5.Lcd.setRotation(3);
     setCpuFrequencyMhz(80); //Save battery by turning down the CPU clock
     btStop();               //Save battery by turning off Bluetooth
 
     ms_startup.start(30000);
 
-    currentScreen = 0;      // boot screen
-    M5.Lcd.setRotation(3);
-    M5.Lcd.setTextSize(1);
-    M5.Lcd.setTextWrap(true);
-    M5.Lcd.println(F("Starting..."));
-
-    M5.Lcd.println(F("Initializing preferences..."));
+    changeScreen(0);
+    startupLog("Starting...", 1);
+    startupLog("Initializing preferences...", 1);
     preferences_setup();
-    
-    M5.Lcd.println(F("Initializing power management..."));
+    startupLog("Initializing power management...", 1);
     power_setup();
-    
-    M5.Lcd.println(F("Initializing WiFi..."));
+    startupLog("Initializing WiFi...", 1);
     WiFi_setup();
-    
-    M5.Lcd.println(F("Initializing webSockets..."));
+    startupLog("Initializing webSockets...", 1);
     webSockets_setup();
 
     while (ms_startup.isRunning()) {
@@ -41,13 +35,11 @@ void setup () {
         power_onLoop();
         if (ws_isConnected & time_isSet) ms_startup.stop();
     }
-
-    M5.Lcd.println();
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.println(F("Startup complete."));
-    M5.Lcd.println(F("Press \"M5\" button \r\nto continue."));
-    M5.Lcd.println();
     
+    startupLog("Startup complete.", 1);
+    startupLog("", 1);
+    startupLog("Press \"M5\" button \r\nto continue.", 2);
+
 }
 
 void loop () {
@@ -59,9 +51,7 @@ void loop () {
 
     // M5 Button
     if (M5.BtnA.wasReleased()) {
-        if (currentScreen == 3) currentScreen = 0;  // reset
-        currentScreen = currentScreen + 1;
-        changeScreen();
+        changeScreen(-1);
     }
 
     // Action Button

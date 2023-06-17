@@ -5,49 +5,25 @@
 #include "NetworkModule.h"
 #include "PowerModule.h"
 
-int currentScreen;              // 1-Tally, 2-Power, 3-Setup
+const int maxScreen = 3;
+int currentScreen = 0;          // 0-Startup, 1-Tally, 2-Power, 3-Setup
 int currentBrightness = 11;     // default 11, max 12
 
 const int tft_width = 240;
 const int tft_heigth = 135;
 
+TFT_eSprite startupScreen = TFT_eSprite(&M5.Lcd);
 TFT_eSprite tallyScreen = TFT_eSprite(&M5.Lcd);
 TFT_eSprite powerScreen = TFT_eSprite(&M5.Lcd);
 TFT_eSprite setupScreen = TFT_eSprite(&M5.Lcd);
 
+struct startupLogData {
+    char logMessage[65];
+    int textSize;
+};
 
-void clearScreen() {
-    M5.Lcd.fillScreen(TFT_BLACK);
-    M5.Lcd.setTextSize(1);
-    M5.Lcd.setCursor(10,10);
-}
-
-
-void showTallyScreen() {
-    clearScreen();
-    tallyScreen.createSprite(tft_width, tft_heigth);
-    tallyScreen.setRotation(3);
-    
-}
-
-
-void showPowerScreen() {
-
-    clearScreen();
-    powerScreen.createSprite(tft_width, tft_heigth);
-    powerScreen.setRotation(3);
-
-}
-
-
-void showSetupScreen() {
-    
-    if (!wm.getWebPortalActive()) wm.startWebPortal();
-    clearScreen();
-    setupScreen.createSprite(tft_width, tft_heigth);
-    setupScreen.setRotation(3);
-
-}
+startupLogData startupLogEntries[20];
+int index_startupLog = -1;
 
 
 void refreshTallyScreen() {
@@ -78,14 +54,18 @@ void refreshTallyScreen() {
         tallyScreen.fillRect(0,0,240,135, TFT_BLACK);
     }
     
+    // Clock
     tallyScreen.setTextSize(2);
     tallyScreen.setCursor((tft_width/2)-20, 8);
     tallyScreen.setTextColor(TFT_WHITE, TFT_BLACK);
     tallyScreen.print(timeStr);
+    
+    // Friendly Name
     tallyScreen.setTextSize(9);
     tallyScreen.setCursor(10,80);
     tallyScreen.setTextColor(TFT_WHITE);
     tallyScreen.print(friendlyName);
+    
     tallyScreen.pushSprite(0,0);
     
 }
@@ -136,25 +116,65 @@ void refreshSetupScreen() {
 }
 
 
-void changeScreen() {
+void refreshStartupScreen() {
+    startupScreen.fillSprite(TFT_BLACK);
+    startupScreen.setTextColor(TFT_WHITE);
+    startupScreen.setCursor(0,0);
+    for (int i = 0; i <= index_startupLog; i++) {
+        startupScreen.setTextSize(startupLogEntries[i].textSize);
+        startupScreen.println(startupLogEntries[i].logMessage);
+    }
+    startupScreen.pushSprite(5,5);
+}
+
+
+void changeScreen(int newScreen = -1) {
+
+    if (newScreen < -1 || newScreen > maxScreen) {
+        Serial.println(F("changeScreen() error: \"invalid screen number rejected\""));
+        return;
+    } else if (newScreen == -1) {
+        if (currentScreen == maxScreen) currentScreen = 0;  // reset
+        currentScreen++;
+    } else {
+        currentScreen = newScreen;
+    }
 
     if (wm.getWebPortalActive()) wm.stopWebPortal();
+    
+    startupScreen.deleteSprite();
     tallyScreen.deleteSprite();
     powerScreen.deleteSprite();
     setupScreen.deleteSprite();
+    
+    // clearScreen
+    M5.Lcd.fillScreen(TFT_BLACK);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setCursor(0,0);
 
     switch (currentScreen) {
+        case 0:
+            // startupScreen
+            startupScreen.createSprite(tft_width-5, tft_heigth-5);
+            startupScreen.setRotation(3);
+            break;
         case 1:
-            showTallyScreen();
+            // tallyScreen
+            tallyScreen.createSprite(tft_width, tft_heigth);
+            tallyScreen.setRotation(3);
             break;
         case 2:
-            showPowerScreen();
+            // powerScreen
+            powerScreen.createSprite(tft_width, tft_heigth);
+            powerScreen.setRotation(3);
             break;
         case 3:
-            showSetupScreen();
+            // setupScreen
+            if (!wm.getWebPortalActive()) wm.startWebPortal();
+            setupScreen.createSprite(tft_width, tft_heigth);
+            setupScreen.setRotation(3);
             break;
         default:
-            clearScreen();
             M5.Lcd.println("Invalid Screen!");
             break; 
     }
@@ -163,6 +183,9 @@ void changeScreen() {
 
 void refreshScreen() {
     switch (currentScreen) {
+        case 0:
+            refreshStartupScreen();
+            break;
         case 1:
             refreshTallyScreen();
             break;
@@ -186,4 +209,16 @@ void setBrightness(int newBrightness = 0) {
         if (currentBrightness > pwr.maxBrightness) currentBrightness = 7;
     }
     M5.Axp.ScreenBreath(currentBrightness);
+}
+
+
+void startupLog(char in_logMessage[65], int in_textSize) {
+    index_startupLog++;
+    if (index_startupLog > 19) {
+        Serial.println(F("Too many log entries."));
+        return;
+    }
+    strcpy(startupLogEntries[index_startupLog].logMessage, in_logMessage);
+    startupLogEntries[index_startupLog].textSize = in_textSize;
+    refreshStartupScreen();
 }

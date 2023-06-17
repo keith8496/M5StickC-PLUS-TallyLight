@@ -35,7 +35,7 @@ void WiFi_onLoop() {
     if (wm.getWebPortalActive()) wm.process();
     
     if (md_setNtpTime.justFinished()) {               
-        if (currentScreen == 0) M5.Lcd.println("Initializing NTP...");
+        if (currentScreen == 0) startupLog("Initializing NTP...", 1);
         configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
         struct tm timeInfo;
         if (!getLocalTime(&timeInfo)) {
@@ -56,7 +56,12 @@ void WiFi_onLoop() {
             time_isSet = true;
             md_setNtpTime.stop();
             Serial.println(&timeInfo, "%A %B %d, %Y %H:%M:%S");
-            if (currentScreen == 0) M5.Lcd.println(&timeInfo, "%A %B %d, %Y %H:%M:%S");
+            if (currentScreen == 0) { 
+                //char timeStr[14];
+                //sprintf(timeStr, "%A %B %d, %Y %H:%M:%S", &timeInfo);
+                //startupLog(timeStr, 1);
+                startupLog("NTP Connected", 1);
+            }
         }
     }
 
@@ -148,7 +153,7 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_WIFI_STA_CONNECTED:          
           Serial.println(F("Connected to access point"));
-          if (currentScreen == 0) M5.Lcd.println(F("Connected to access point"));          
+          //if (currentScreen == 0) startupLog("Connected to access point", 1);      
           break;
 
       case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -163,8 +168,10 @@ void WiFi_onEvent(WiFiEvent_t event){
           Serial.print(F("Obtained IP address: "));
           Serial.println(WiFi.localIP());
           if (currentScreen == 0) {
-            M5.Lcd.print(F("Obtained IP address: "));
-            M5.Lcd.println(WiFi.localIP());
+            char buff[33];
+            strcpy(buff, "Obtained IP address: ");
+            strcat(buff, WiFi.localIP().toString().c_str());
+            startupLog(buff, 1);
           }
           break;
       
