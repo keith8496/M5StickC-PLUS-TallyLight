@@ -1,6 +1,7 @@
 #include <M5StickCPlus.h>
 #include <WiFiManager.h>
 #include <millisDelay.h>
+#include <ezTime.h>             // set #define EZTIME_CACHE_NVS in this file
 #include "PrefsModule.h"
 #include "WebSocketsModule.h"
 #include "ScreenModule.h"
@@ -34,34 +35,25 @@ void WiFi_onLoop() {
     
     if (md_setNtpTime.justFinished()) {            
 
-        if (currentScreen == 0) startupLog("Initializing NTP...", 1);
-        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-        struct tm timeInfo;
-        if (!getLocalTime(&timeInfo)) {
-            Serial.println(F("Failed to obtain time"));
-            md_setNtpTime.repeat();
-        } else {
-            RTC_TimeTypeDef TimeStruct;
-            RTC_DateTypeDef DateStruct;
-            TimeStruct.Hours   = timeInfo.tm_hour;
-            TimeStruct.Minutes = timeInfo.tm_min;
-            TimeStruct.Seconds = timeInfo.tm_sec;
-            DateStruct.WeekDay = timeInfo.tm_wday;
-            DateStruct.Month = timeInfo.tm_mon + 1;
-            DateStruct.Date = timeInfo.tm_mday;
-            DateStruct.Year = timeInfo.tm_year + 1900;
-            M5.Rtc.SetTime(&TimeStruct);
-            M5.Rtc.SetData(&DateStruct);
-            time_isSet = true;
-            md_setNtpTime.stop();
-            Serial.println(&timeInfo, "%A %B %d, %Y %H:%M:%S");
-            if (currentScreen == 0) { 
-                //char timeStr[14];
-                //sprintf(timeStr, "%A %B %d, %Y %H:%M:%S", &timeInfo);
-                //startupLog(timeStr, 1);
-                startupLog("NTP Connected", 1);
-            }
-        }
+        md_setNtpTime.stop();
+        if (currentScreen == 0) startupLog("Initializing ezTime...", 1);
+
+        setServer(ntpServer);
+        waitForSync();
+        
+        Timezone centralTime;
+        if (!centralTime.setCache("timezone", "centralTime")) centralTime.setLocation("America/Chicago");
+        centralTime.setDefault();
+        time_isSet = true;
+
+        Serial.println("UTC Time: " + UTC.dateTime(ISO8601));
+        Serial.println("Central Time: " + centralTime.dateTime(ISO8601));
+        
+        char buff[65];
+        strcpy(buff, "Central Time: ");
+        strcat(buff, centralTime.dateTime(ISO8601).c_str());
+        if (currentScreen == 0) startupLog(buff, 1);
+
     }
 
 }
@@ -105,7 +97,7 @@ void WiFi_setup () {
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert");                          // set dark theme
     wm.setCountry("US");
-    wm.setHostname(deviceName);
+    //wm.setHostname(deviceName);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 1) startupLog("Config Portal Started",1);
