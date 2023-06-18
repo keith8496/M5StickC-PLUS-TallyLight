@@ -8,8 +8,7 @@ extern uint16_t inputIds;
 extern char nodeRED_ServerIP[16];
 extern int nodeRED_ServerPort;
 extern char nodeRED_ServerUrl[33];
-extern long gmtOffset_sec;
-extern int daylightOffset_sec;
+extern char localTimeZone[17];
 extern char ntpServer[33];
 
 extern char deviceId[17];

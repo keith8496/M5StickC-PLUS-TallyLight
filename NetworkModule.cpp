@@ -16,8 +16,7 @@ WiFiManagerParameter wm_nodeRED_ServerIP("nr_ServerIP", "Node-RED Server IP");
 WiFiManagerParameter wm_nodeRED_ServerPort("nr_ServerPort", "Node-RED Server Port");
 WiFiManagerParameter wm_nodeRED_ServerUrl("nr_ServerUrl", "Node-RED Server URL");
 WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
-WiFiManagerParameter wm_gmtOffset_sec("gmtOffset_sec", "GMT Offset Seconds");
-WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Seconds");
+WiFiManagerParameter wm_localTimeZone("localTimeZone", "Local Timezone (restart req)");
 
 Timezone localTime;
 bool time_isSet = false;
@@ -42,7 +41,7 @@ void WiFi_onLoop() {
         setServer(ntpServer);
         waitForSync();
         
-        if (!localTime.setCache("timezone", "localTime")) localTime.setLocation("America/Chicago");
+        if (!localTime.setCache("timezone", "localTime")) localTime.setLocation(localTimeZone);
         localTime.setDefault();
         time_isSet = true;
 
@@ -71,8 +70,7 @@ void WiFi_setup () {
     wm.addParameter(&wm_nodeRED_ServerPort);
     wm.addParameter(&wm_nodeRED_ServerUrl);
     wm.addParameter(&wm_ntpServer);
-    wm.addParameter(&wm_gmtOffset_sec);
-    wm.addParameter(&wm_daylightOffset_sec);
+    wm.addParameter(&wm_localTimeZone);
     
     // set wm values
     char buff[33];
@@ -84,10 +82,7 @@ void WiFi_setup () {
     wm_nodeRED_ServerPort.setValue(buff, sizeof(buff));
     wm_nodeRED_ServerUrl.setValue(nodeRED_ServerUrl, sizeof(nodeRED_ServerUrl));
     wm_ntpServer.setValue(ntpServer, sizeof(ntpServer));
-    itoa(gmtOffset_sec, buff, 10);
-    wm_gmtOffset_sec.setValue(buff, sizeof(wm_gmtOffset_sec));
-    itoa(daylightOffset_sec, buff, 10);
-    wm_daylightOffset_sec.setValue(buff, sizeof(wm_daylightOffset_sec));
+    wm_localTimeZone.setValue(localTimeZone, sizeof(localTimeZone));
 
     
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
@@ -252,9 +247,8 @@ void WiFi_onSaveParams() {
     strcpy(nodeRED_ServerIP, wm_nodeRED_ServerIP.getValue());
     nodeRED_ServerPort = atoi(wm_nodeRED_ServerPort.getValue());
     strcpy(nodeRED_ServerUrl, wm_nodeRED_ServerUrl.getValue());
-    gmtOffset_sec = atoi(wm_gmtOffset_sec.getValue());
-    daylightOffset_sec = atoi(wm_daylightOffset_sec.getValue());
     strcpy(ntpServer, wm_ntpServer.getValue());
+    strcpy(localTimeZone, wm_localTimeZone.getValue());
 
     preferences_save();
     webSockets_getTally();
