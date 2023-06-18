@@ -106,7 +106,7 @@ void WiFi_setup () {
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert"); // set dark theme
     wm.setCountry("US");
-    //wm.setHostname(deviceName);
+    wm.setHostname(deviceName);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 1) startupLog("Config Portal Started",1);
