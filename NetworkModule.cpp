@@ -36,7 +36,6 @@ void WiFi_onLoop() {
 
         if (currentScreen == 0) startupLog("Initializing NTP...", 1);
         configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-        Serial.println("configTime executed");
         struct tm timeInfo;
         if (!getLocalTime(&timeInfo)) {
             Serial.println(F("Failed to obtain time"));
@@ -102,9 +101,9 @@ void WiFi_setup () {
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
     wm.setConfigPortalBlocking(false);    
-    wm.setDebugOutput(true);
+    wm.setDebugOutput(false);
     wm.setSaveParamsCallback(WiFi_onSaveParams);
-    wm.setClass("invert"); // set dark theme
+    wm.setClass("invert");                          // set dark theme
     wm.setCountry("US");
     wm.setHostname(deviceName);
     
@@ -131,7 +130,7 @@ void WiFi_onEvent(WiFiEvent_t event){
 
   switch (event) {
       
-      /*case ARDUINO_EVENT_WIFI_READY: 
+      case ARDUINO_EVENT_WIFI_READY: 
           Serial.println("WiFi interface ready");
           break;
       
@@ -145,20 +144,19 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_WIFI_STA_STOP:
           Serial.println("WiFi clients stopped");
-          break;*/
+          break;
       
       case ARDUINO_EVENT_WIFI_STA_CONNECTED:          
-          Serial.println(F("Connected to access point"));
-          //if (currentScreen == 0) startupLog("Connected to access point", 1);      
+          Serial.println(F("Connected to access point"));     
           break;
 
       case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
           Serial.println("Disconnected from WiFi access point");
           break;
       
-      /*case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
+      case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
           Serial.println("Authentication mode of access point has changed");
-          break;*/
+          break;
       
       case ARDUINO_EVENT_WIFI_STA_GOT_IP:
           Serial.print(F("Obtained IP address: "));
@@ -175,7 +173,7 @@ void WiFi_onEvent(WiFiEvent_t event){
           Serial.println("Lost IP address and IP address is reset to 0");
           break;
       
-      /*case ARDUINO_EVENT_WPS_ER_SUCCESS:
+      case ARDUINO_EVENT_WPS_ER_SUCCESS:
           Serial.println("WiFi Protected Setup (WPS): succeeded in enrollee mode");
           break;
       
@@ -233,7 +231,7 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_ETH_STOP:
           Serial.println("Ethernet stopped");
-          break;`
+          break;
       
       case ARDUINO_EVENT_ETH_CONNECTED:
           Serial.println("Ethernet connected");
@@ -245,10 +243,11 @@ void WiFi_onEvent(WiFiEvent_t event){
       
       case ARDUINO_EVENT_ETH_GOT_IP:
           Serial.println("Obtained IP address");
-          break;*/
+          break;
       
       default: 
         break;
+
   }
 
 }
