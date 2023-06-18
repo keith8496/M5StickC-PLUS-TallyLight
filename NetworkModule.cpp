@@ -18,8 +18,6 @@ WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
 WiFiManagerParameter wm_gmtOffset_sec("gmtOffset_sec", "GMT Offset Seconds");
 WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Seconds");
 
-char deviceId[9];
-char deviceName[33];
 bool time_isSet = false;
 
 
@@ -72,12 +70,7 @@ void WiFi_setup () {
 
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFi_onEvent);
-    
-    ultoa(WIFI_getChipId(), deviceId, 16);
-    strcpy(deviceName, "M5StickC-Plus-");
-    strcat(deviceName, deviceId);
-
-    
+        
     // wm_addParameters
     wm.addParameter(&wm_friendlyName);
     wm.addParameter(&wm_inputIds);
@@ -111,6 +104,7 @@ void WiFi_setup () {
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert"); // set dark theme
     wm.setCountry("US");
+    wm.setHostname(deviceName);
     
     if (!wm.autoConnect(deviceName)) {
         M5.Lcd.println(F("Config Portal Active"));
