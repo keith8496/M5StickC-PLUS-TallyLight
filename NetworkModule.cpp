@@ -32,9 +32,11 @@ void WiFi_onLoop() {
     
     if (wm.getWebPortalActive()) wm.process();
     
-    if (md_setNtpTime.justFinished()) {               
+    if (md_setNtpTime.justFinished()) {            
+
         if (currentScreen == 0) startupLog("Initializing NTP...", 1);
         configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+        Serial.println("configTime executed");
         struct tm timeInfo;
         if (!getLocalTime(&timeInfo)) {
             Serial.println(F("Failed to obtain time"));
@@ -82,7 +84,7 @@ void WiFi_setup () {
     wm.addParameter(&wm_daylightOffset_sec);
     
     // set wm values
-    char buff[17];
+    char buff[33];
     wm_friendlyName.setValue(friendlyName, sizeof(friendlyName));
     ultoa(inputIds, buff, 2);
     wm_inputIds.setValue(buff, sizeof(buff));
@@ -100,14 +102,14 @@ void WiFi_setup () {
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
     wm.setConfigPortalBlocking(false);    
-    wm.setDebugOutput(false);
+    wm.setDebugOutput(true);
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert"); // set dark theme
     wm.setCountry("US");
-    wm.setHostname(deviceName);
+    //wm.setHostname(deviceName);
     
     if (!wm.autoConnect(deviceName)) {
-        M5.Lcd.println(F("Config Portal Active"));
+        if (currentScreen == 1) startupLog("Config Portal Started",1);
         while (wm.getConfigPortalActive()) {
             wm.process();
             M5.update();
@@ -115,7 +117,7 @@ void WiFi_setup () {
                 wm.stopConfigPortal();
             }
         }
-        M5.Lcd.println(F("Config Portal Closed"));
+        if (currentScreen == 1) startupLog("Config Portal Stopped",1);
     }
 
     md_setNtpTime.start(1000);
@@ -162,7 +164,7 @@ void WiFi_onEvent(WiFiEvent_t event){
           Serial.print(F("Obtained IP address: "));
           Serial.println(WiFi.localIP());
           if (currentScreen == 0) {
-            char buff[33];
+            char buff[65];
             strcpy(buff, "Obtained IP address: ");
             strcat(buff, WiFi.localIP().toString().c_str());
             startupLog(buff, 1);

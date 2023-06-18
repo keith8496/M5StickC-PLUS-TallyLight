@@ -42,12 +42,15 @@ void setup () {
     startupLog("Initializing webSockets...", 1);
     webSockets_setup();
 
+    Serial.println("Entering ms_startup_isRunning");
     while (ms_startup.isRunning()) {
         WiFi_onLoop();
         webSockets_onLoop();
         power_onLoop();
         if (ws_isConnected & time_isSet) ms_startup.stop();
+        if (ms_startup.justFinished()) ms_startup.stop();
     }
+    Serial.println("Exited ms_startup_isRunning");
     
     startupLog("Startup complete.", 1);
     startupLog("", 1);
