@@ -28,6 +28,7 @@ int index_startupLog = -1;
 
 void refreshTallyScreen() {
 
+    /*
     RTC_TimeTypeDef time;
     M5.Rtc.GetTime(&time);
     
@@ -35,7 +36,8 @@ void refreshTallyScreen() {
     const char* period = (time.Hours >= 12) ? "PM" : "AM";
     const int hours12 = (time.Hours > 12) ? time.Hours - 12 : time.Hours;
     sprintf(timeStr, "%02d:%02d:%02d %s", hours12, time.Minutes, time.Seconds, period);
-    
+    */
+
     bool isProgram = false;
     bool isPreview = false;
     
@@ -64,7 +66,7 @@ void refreshTallyScreen() {
     tallyScreen.setTextSize(2);
     tallyScreen.setCursor((tft_width/2)-20, 8);
     tallyScreen.setTextColor(TFT_WHITE, TFT_BLACK);
-    tallyScreen.print(timeStr);
+    tallyScreen.print(localTime.dateTime("g:i:s A"));
     
     // Friendly Name
     tallyScreen.setTextSize(9);

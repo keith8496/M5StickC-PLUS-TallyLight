@@ -28,7 +28,6 @@ void preferences_setup() {
 
 
 void preferences_save() {
-
     preferences.begin("custom", false);
     preferences.putString("friendlyName", friendlyName);
     preferences.putBytes("inputIds", &inputIds, 2);
@@ -39,5 +38,4 @@ void preferences_save() {
     preferences.putInt("gmtOffset_sec", gmtOffset_sec);
     preferences.putInt("daylightOffset", daylightOffset_sec);
     preferences.end();
-    
 }

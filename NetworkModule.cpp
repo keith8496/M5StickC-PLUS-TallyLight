@@ -19,6 +19,7 @@ WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
 WiFiManagerParameter wm_gmtOffset_sec("gmtOffset_sec", "GMT Offset Seconds");
 WiFiManagerParameter wm_daylightOffset_sec("daylightOffset", "Daylight Offset Seconds");
 
+Timezone localTime;
 bool time_isSet = false;
 
 
@@ -34,24 +35,23 @@ void WiFi_onLoop() {
     if (wm.getWebPortalActive()) wm.process();
     
     if (md_setNtpTime.justFinished()) {            
-
         md_setNtpTime.stop();
+        
         if (currentScreen == 0) startupLog("Initializing ezTime...", 1);
 
         setServer(ntpServer);
         waitForSync();
         
-        Timezone centralTime;
-        if (!centralTime.setCache("timezone", "centralTime")) centralTime.setLocation("America/Chicago");
-        centralTime.setDefault();
+        if (!localTime.setCache("timezone", "localTime")) localTime.setLocation("America/Chicago");
+        localTime.setDefault();
         time_isSet = true;
 
         Serial.println("UTC Time: " + UTC.dateTime(ISO8601));
-        Serial.println("Central Time: " + centralTime.dateTime(ISO8601));
+        Serial.println("Local Time: " + localTime.dateTime(ISO8601));
         
         char buff[65];
-        strcpy(buff, "Central Time: ");
-        strcat(buff, centralTime.dateTime(ISO8601).c_str());
+        strcpy(buff, "Local Time: ");
+        strcat(buff, localTime.dateTime(ISO8601).c_str());
         if (currentScreen == 0) startupLog(buff, 1);
 
     }
@@ -97,7 +97,7 @@ void WiFi_setup () {
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert");                          // set dark theme
     wm.setCountry("US");
-    //wm.setHostname(deviceName);
+    wm.setHostname(deviceName);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 1) startupLog("Config Portal Started",1);
