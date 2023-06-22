@@ -118,20 +118,20 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             break;
         
         case WStype_PING: {
-            char buff[65];
+            /*char buff[65];
             strcpy(buff, "Local Time: ");
             strcat(buff, localTime.dateTime(ISO8601).c_str());
             Serial.print(buff);
-            Serial.println(F(" Websockets PING"));
+            Serial.println(F(" Websockets PING"));*/
             break;
         }
         
         case WStype_PONG: {
-            char buff[65];
+            /*char buff[65];
             strcpy(buff, "Local Time: ");
             strcat(buff, localTime.dateTime(ISO8601).c_str());
             Serial.print(buff);
-            Serial.println(F(" Websockets PONG"));
+            Serial.println(F(" Websockets PONG"));*/
             break;
         }
        
