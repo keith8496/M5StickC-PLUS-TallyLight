@@ -56,7 +56,7 @@ void webSockets_onLoop() {
         String json;
         json.reserve(512);
         serializeJson(doc, json);
-        Serial.println(json);
+        //Serial.println(json);
         ws.sendTXT(json);
 
     }
@@ -70,7 +70,7 @@ void webSockets_setup() {
   Serial.println(F("Attempting to connect to websockets..."));
   ws.onEvent(webSockets_onEvent);
   ws.setReconnectInterval(5000);
-  ws.enableHeartbeat(60000, 1000, 60);
+  //ws.enableHeartbeat(60000, 1000, 60);
   ws.begin(nodeRED_ServerIP, nodeRED_ServerPort, nodeRED_ServerUrl);
   ws.loop();
 
@@ -115,8 +115,26 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         }
         
         case WStype_BIN:
-        case WStype_PING:
-        case WStype_PONG:
+            break;
+        
+        case WStype_PING: {
+            char buff[65];
+            strcpy(buff, "Local Time: ");
+            strcat(buff, localTime.dateTime(ISO8601).c_str());
+            Serial.print(buff);
+            Serial.println(F(" Websockets PING"));
+            break;
+        }
+        
+        case WStype_PONG: {
+            char buff[65];
+            strcpy(buff, "Local Time: ");
+            strcat(buff, localTime.dateTime(ISO8601).c_str());
+            Serial.print(buff);
+            Serial.println(F(" Websockets PONG"));
+            break;
+        }
+       
         case WStype_FRAGMENT_TEXT_START:
         case WStype_FRAGMENT_BIN_START:
         case WStype_FRAGMENT:
