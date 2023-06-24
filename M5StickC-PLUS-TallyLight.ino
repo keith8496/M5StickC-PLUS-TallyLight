@@ -5,12 +5,22 @@
 #include "PowerModule.h"
 #include "ScreenModule.h"
 #include "millisDelay.h"
+#include "RunningAverage.h"
 
 millisDelay ms_startup;
 
+#define TPS false
+#if TPS
+    millisDelay ms_runningAvg;
+    millisDelay ms_tps;
+    int ticks = 0;
+    const int samples = 100;
+    RunningAverage ra_TPS(samples);
+#endif
+
+
 char deviceId[17];
 char deviceName[33];
-
 
 void setup () {
 
@@ -51,6 +61,11 @@ void setup () {
     startupLog("", 1);
     startupLog("Press \"M5\" button \r\nto continue.", 2);
 
+    #if TPS
+        ms_tps.start(1000);
+        ms_runningAvg.start(60000);
+    #endif
+
 }
 
 void loop () {
@@ -71,5 +86,21 @@ void loop () {
     }
 
     refreshScreen();
+
+    #if TPS
+        if (ms_tps.justFinished()) {
+            ms_tps.repeat();
+            ra_TPS.addValue(ticks);
+            ticks = 0;
+        }
+
+        if (ms_runningAvg.justFinished()) {
+            ms_runningAvg.repeat();
+            Serial.println(localTime.dateTime(ISO8601));
+            Serial.println("tps: " + String(ra_TPS.getFastAverage()) );
+            Serial.println();
+        }
+        ticks++;
+    #endif
 
 }
