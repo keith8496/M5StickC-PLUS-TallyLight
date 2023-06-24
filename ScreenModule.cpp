@@ -4,6 +4,9 @@
 #include "WebSocketsModule.h"
 #include "NetworkModule.h"
 #include "PowerModule.h"
+#include "millisDelay.h"
+
+millisDelay md_screenRefresh;
 
 const int maxScreen = 3;
 int currentScreen = 0;          // 0-Startup, 1-Tally, 2-Power, 3-Setup
@@ -27,16 +30,6 @@ int index_startupLog = -1;
 
 
 void refreshTallyScreen() {
-
-    /*
-    RTC_TimeTypeDef time;
-    M5.Rtc.GetTime(&time);
-    
-    char timeStr[14];
-    const char* period = (time.Hours >= 12) ? "PM" : "AM";
-    const int hours12 = (time.Hours > 12) ? time.Hours - 12 : time.Hours;
-    sprintf(timeStr, "%02d:%02d:%02d %s", hours12, time.Minutes, time.Seconds, period);
-    */
 
     bool isProgram = false;
     bool isPreview = false;
@@ -170,6 +163,7 @@ void changeScreen(int newScreen = -1) {
             // tallyScreen
             tallyScreen.createSprite(tft_width, tft_heigth);
             tallyScreen.setRotation(3);
+            webSockets_getTally();
             break;
         case 2:
             // powerScreen
@@ -186,10 +180,18 @@ void changeScreen(int newScreen = -1) {
             M5.Lcd.println("Invalid Screen!");
             break; 
     }
+
+    md_screenRefresh.start(33.33333); // 30 fps
+
 }
 
 
 void refreshScreen() {
+
+    // Limit to 30 FPS
+    if(!md_screenRefresh.justFinished()) return;
+    md_screenRefresh.repeat();
+    
     switch (currentScreen) {
         case 0:
             refreshStartupScreen();
@@ -206,6 +208,7 @@ void refreshScreen() {
         default:
             break; 
     }
+
 }
 
 

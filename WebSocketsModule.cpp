@@ -25,7 +25,7 @@ void webSockets_getTally();
 
 
 void webSockets_onLoop() {
-    
+
     if (md_sendStatus.justFinished()) {
         
         md_sendStatus.repeat();
@@ -38,6 +38,7 @@ void webSockets_onLoop() {
         doc["MessageType"] = "DeviceStatus";
         doc["MessageData"]["friendlyName"] = friendlyName;
         doc["MessageData"]["inputIds"] = buff;
+        doc["MessageData"]["batVoltage"] = pwr.batVoltage;
         doc["MessageData"]["batPercentage"] = pwr.batPercentage;
         doc["MessageData"]["batCurrent"] = pwr.batCurrent;
         doc["MessageData"]["batChargeCurrent"] = pwr.batChargeCurrent;
@@ -70,7 +71,6 @@ void webSockets_setup() {
   Serial.println(F("Attempting to connect to websockets..."));
   ws.onEvent(webSockets_onEvent);
   ws.setReconnectInterval(5000);
-  //ws.enableHeartbeat(60000, 1000, 60);
   ws.begin(nodeRED_ServerIP, nodeRED_ServerPort, nodeRED_ServerUrl);
   ws.loop();
 
@@ -105,9 +105,10 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
             const char* MessageType = doc["MessageType"];
 
             if (MessageType == nullptr) {
-                Serial.print(F("MessageType is nullptr"));
+                Serial.println(F("MessageType is nullptr"));
                 return;
             } else if (strcmp(MessageType, "SetTally") == 0) {
+                //Serial.println(F("SetTally"));
                 webSockets_onTally(doc);
             }
             
