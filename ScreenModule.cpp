@@ -142,6 +142,7 @@ void changeScreen(int newScreen = -1) {
     }
 
     if (wm.getWebPortalActive()) wm.stopWebPortal();
+    set_chargeToPowerOff(0);
     
     startupScreen.deleteSprite();
     tallyScreen.deleteSprite();
@@ -169,6 +170,7 @@ void changeScreen(int newScreen = -1) {
             // powerScreen
             powerScreen.createSprite(tft_width, tft_heigth);
             powerScreen.setRotation(3);
+            set_chargeToPowerOff(900000);
             break;
         case 3:
             // setupScreen

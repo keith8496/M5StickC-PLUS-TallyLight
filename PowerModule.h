@@ -18,6 +18,6 @@ struct power {
 
 extern power pwr;
 
-
 void power_setup();
 void power_onLoop();
+void set_chargeToPowerOff(unsigned int delay);
