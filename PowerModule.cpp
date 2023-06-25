@@ -2,6 +2,7 @@
 #include <millisDelay.h>
 #include "RunningAverage.h"
 #include "PowerModule.h"
+#include "ScreenModule.h"
 
 #define Vmax 4200
 #define Vmin 3000
