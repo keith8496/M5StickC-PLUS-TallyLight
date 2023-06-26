@@ -105,8 +105,15 @@ void doPowerManagement() {
   pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
   */
 
-  /* test2 (cam1)*/
+  /* test2 (cam1)
   const float batPercentageNow2 = min(100, (100.0 + (pwr.coulomb_count)));
+  ravg_batPercentage2.addValue(batPercentageNow2);
+  pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
+  pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
+  */
+
+  /* test 3 (cam3)*/
+  const float batPercentageNow2 = (batteryCapacity + pwr.coulomb_count) / batteryCapacity * 100;
   ravg_batPercentage2.addValue(batPercentageNow2);
   pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
   pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
