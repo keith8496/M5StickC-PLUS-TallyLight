@@ -64,18 +64,6 @@ void power_onLoop() {
         ravg_batPercentage.getAverage();
         ravg_batPercentage2.getAverage();
         ravg_batCurrent.getAverage();
-      
-        // test
-        Serial.println();
-        Serial.print(F("GetCoulombchargeData: "));
-        Serial.println(M5.Axp.GetCoulombchargeData());
-        Serial.print(F("GetCoulombdischargeData: "));
-        Serial.println(M5.Axp.GetCoulombdischargeData());
-        Serial.print(F("GetCoulombData: "));
-        Serial.println(M5.Axp.GetCoulombData());
-        Serial.print(F("batPercentage2: "));
-        Serial.println(pwr.batPercentage2);
-
     }
     if (md_power.justFinished()) {
         md_power.repeat();
@@ -102,6 +90,14 @@ void doPowerManagement() {
   pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
 
   pwr.coulomb_count = M5.Axp.GetCoulombData();
+  if (pwr.coulomb_count > 0) {
+      coulomb_adjust = coulomb_adjust + pwr.coulomb_count;
+      Serial.printf("\n\rCoulomb Count: %.4f", pwr.coulomb_count);
+      Serial.printf("\n\rCoulomb Adjust: %.4f", coulomb_adjust);
+      pwr.coulomb_count = 0;
+      M5.Axp.ClearCoulombcounter();
+  }
+
   const float batPercentageNow2 = min(100, (100.0 + (pwr.coulomb_count * batteryCapacity / 1000)));
   ravg_batPercentage2.addValue(batPercentageNow2);
   pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
@@ -117,17 +113,6 @@ void doPowerManagement() {
   pwr.vinCurrent = M5.Axp.GetVinCurrent();
   pwr.apsVoltage = M5.Axp.GetAPSVoltage();
   pwr.tempInAXP192 = M5.Axp.GetTempInAXP192();
-
-  if (pwr.batVoltage >= 4.2*(0.95) // 3.99v
-      && pwr.batCurrent == 0
-      && pwr.batChargeCurrent == 0
-      && pwr.coulomb_count != 0) {
-      // Battery is w/in 5% of 4.2v and charger has stopped.
-      // Reset coulomb counter.
-      coulomb_adjust = coulomb_adjust + pwr.coulomb_count;
-      M5.Axp.ClearCoulombcounter();
-      Serial.printf("\n\rCoulomb Adjust: %.4f", coulomb_adjust);
-  }
 
 
   // Power Mode

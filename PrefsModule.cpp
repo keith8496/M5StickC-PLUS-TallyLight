@@ -72,7 +72,7 @@ void preferences_save() {
     preferences.putString("nr_ServerUrl", nodeRED_ServerUrl);
     preferences.putString("ntpServer", ntpServer);
     preferences.putString("localTimeZone", localTimeZone);
-    preferences.putInt("nr_batteryCapacity", batteryCapacity);
+    preferences.putInt("batteryCapacity", batteryCapacity);
     preferences.end();
 }
 
