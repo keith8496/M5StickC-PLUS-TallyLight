@@ -1268,7 +1268,7 @@
         "type": "function",
         "z": "20e8e8ac36f6e0b9",
         "name": "tallyTest",
-        "func": "if (!msg.payload) {\n    return;\n}\n\nvar atem_pvw1_input_id = flow.get(\"atem_pvw1_input_id\");\nvar atem_pgm1_input_id = atem_pvw1_input_id - 1;\nvar max_input_id = 4;\n\nvar pgm = { topic: \"programInput\", payload: \"\" };\nvar pvw = { topic: \"previewInput\", payload: \"\" };\n\natem_pvw1_input_id++;\natem_pgm1_input_id++;\n\nif (atem_pvw1_input_id > max_input_id) {\n    atem_pvw1_input_id = 1;\n}\n\nif (atem_pgm1_input_id > max_input_id) {\n    atem_pgm1_input_id = 1;\n}\n\npvw[\"payload\"] = atem_pvw1_input_id;\npgm[\"payload\"] = atem_pgm1_input_id;\n\nreturn [pgm,pvw]",
+        "func": "if (!msg.payload) {\n    return;\n}\n\nvar atem_pvw1_input_id = flow.get(\"atem_pvw1_input_id\") || 1;\nvar atem_pgm1_input_id = atem_pvw1_input_id - 1;\nvar max_input_id = 4;\n\nvar pgm = { topic: \"programInput\", payload: \"\" };\nvar pvw = { topic: \"previewInput\", payload: \"\" };\n\natem_pvw1_input_id++;\natem_pgm1_input_id++;\n\nif (atem_pvw1_input_id > max_input_id) {\n    atem_pvw1_input_id = 1;\n}\n\nif (atem_pgm1_input_id > max_input_id) {\n    atem_pgm1_input_id = 1;\n}\n\npvw[\"payload\"] = atem_pvw1_input_id;\npgm[\"payload\"] = atem_pgm1_input_id;\n\nreturn [pgm,pvw]",
         "outputs": 2,
         "noerr": 0,
         "initialize": "",
