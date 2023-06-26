@@ -5,9 +5,11 @@
 #include "ScreenModule.h"
 #include "PrefsModule.h"
 
+/*
 #define Vmax 4200
 #define Vmin 3000
 #define Amp 1000
+*/
 
 
 power pwr;
@@ -16,7 +18,6 @@ millisDelay md_powerOneMin;
 millisDelay md_chargeToOff;
 RunningAverage ravg_batVoltage(60);
 RunningAverage ravg_batPercentage(60);
-RunningAverage ravg_batPercentage2(60);
 RunningAverage ravg_batCurrent(60);
 float coulomb_adjust = 0;
 
@@ -33,7 +34,7 @@ void doPowerManagement();
  *
  * c - c / (1 + k*x/v)^3
  */
-static inline uint8_t sigmoidal(uint16_t voltage, uint16_t minVoltage, uint16_t maxVoltage) {
+//static inline uint8_t sigmoidal(uint16_t voltage, uint16_t minVoltage, uint16_t maxVoltage) {
 	// slow
 	// uint8_t result = 110 - (110 / (1 + pow(1.468 * (voltage - minVoltage)/(maxVoltage - minVoltage), 6)));
 
@@ -41,9 +42,9 @@ static inline uint8_t sigmoidal(uint16_t voltage, uint16_t minVoltage, uint16_t 
 	// uint8_t result = 102 - (102 / (1 + pow(1.621 * (voltage - minVoltage)/(maxVoltage - minVoltage), 8.1)));
 
 	// normal
-	uint8_t result = 105 - (105 / (1 + pow(1.724 * (voltage - minVoltage)/(maxVoltage - minVoltage), 5.5)));
-	return result >= 100 ? 100 : result;
-}
+//	uint8_t result = 105 - (105 / (1 + pow(1.724 * (voltage - minVoltage)/(maxVoltage - minVoltage), 5.5)));
+//	return result >= 100 ? 100 : result;
+//}
 
 
 void power_setup() {
@@ -62,7 +63,6 @@ void power_onLoop() {
         md_powerOneMin.repeat();
         ravg_batVoltage.getAverage();
         ravg_batPercentage.getAverage();
-        ravg_batPercentage2.getAverage();
         ravg_batCurrent.getAverage();
     }
     if (md_power.justFinished()) {
@@ -84,10 +84,12 @@ void doPowerManagement() {
   ravg_batVoltage.addValue(batVoltageNow);
   pwr.batVoltage = ravg_batVoltage.getFastAverage();
 
+  /*
   const float batPercentageNow = (float)sigmoidal(batVoltageNow*1000, Vmin, Vmax);
   ravg_batPercentage.addValue(batPercentageNow);
   pwr.batPercentage = ravg_batPercentage.getFastAverage();
   pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
+  */
 
   pwr.coulomb_count = M5.Axp.GetCoulombData();
   if (pwr.coulomb_count > 0) {
@@ -98,25 +100,10 @@ void doPowerManagement() {
       M5.Axp.ClearCoulombcounter();
   }
 
-  /* test1 (cam3)
-  const float batPercentageNow2 = min(100, (100.0 + (pwr.coulomb_count * batteryCapacity / 1000)));
-  ravg_batPercentage2.addValue(batPercentageNow2);
-  pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
-  pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
-  */
-
-  /* test2 (cam1)
-  const float batPercentageNow2 = min(100, (100.0 + (pwr.coulomb_count)));
-  ravg_batPercentage2.addValue(batPercentageNow2);
-  pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
-  pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
-  */
-
-  /* test 3 (cam3)*/
-  const float batPercentageNow2 = (batteryCapacity + pwr.coulomb_count) / batteryCapacity * 100;
-  ravg_batPercentage2.addValue(batPercentageNow2);
-  pwr.batPercentage2 = ravg_batPercentage2.getFastAverage();
-  pwr.batPercentage_M2 = ravg_batPercentage2.getMaxInBuffer();
+  const float batPercentageNow = (batteryCapacity + pwr.coulomb_count) / batteryCapacity * 100;
+  ravg_batPercentage.addValue(batPercentageNow);
+  pwr.batPercentage = ravg_batPercentage.getFastAverage();
+  pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
 
   ravg_batCurrent.addValue(M5.Axp.GetBatCurrent());
   pwr.batCurrent = ravg_batCurrent.getFastAverage();

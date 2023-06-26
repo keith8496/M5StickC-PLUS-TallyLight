@@ -5,8 +5,6 @@ struct power {
     float batVoltage = 0;
     float batPercentage = 0;
     float batPercentage_M = 0;
-    float batPercentage2 = 0;
-    float batPercentage_M2 = 0;
     float batCurrent = 0;
     float batChargeCurrent = 0;
     float vbusVoltage = 0;
