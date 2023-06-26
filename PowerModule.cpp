@@ -81,7 +81,7 @@ void doPowerManagement() {
   const float batPercentageNow = (float)sigmoidal(batVoltageNow*1000, Vmin, Vmax);
   ravg_batPercentage.addValue(batPercentageNow);
   pwr.batPercentage = ravg_batPercentage.getFastAverage();
-  pwr.batPercentage_M = ravg_batPercentage.getMax();
+  pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
 
   ravg_batCurrent.addValue(M5.Axp.GetBatCurrent());
   pwr.batCurrent = ravg_batCurrent.getFastAverage();
