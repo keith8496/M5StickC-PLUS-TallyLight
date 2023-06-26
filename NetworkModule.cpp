@@ -9,6 +9,7 @@
 WiFiManager wm;
 millisDelay md_setNtpTime;
 
+/*
 // Parameters
 WiFiManagerParameter wm_friendlyName("friendlyName", "Friendly Name");
 WiFiManagerParameter wm_inputIds("inputIds", "Input IDs (0000000000000001)");
@@ -17,6 +18,8 @@ WiFiManagerParameter wm_nodeRED_ServerPort("nr_ServerPort", "Node-RED Server Por
 WiFiManagerParameter wm_nodeRED_ServerUrl("nr_ServerUrl", "Node-RED Server URL");
 WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
 WiFiManagerParameter wm_localTimeZone("localTimeZone", "Local Timezone (restart req)");
+WiFiManagerParameter wm_batteryCapacity("batteryCapacity", "Battery Capacity (mAh)");
+*/
 
 Timezone localTime;
 bool time_isSet = false;
@@ -63,6 +66,7 @@ void WiFi_setup () {
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFi_onEvent);
         
+    /*
     // wm_addParameters
     wm.addParameter(&wm_friendlyName);
     wm.addParameter(&wm_inputIds);
@@ -71,6 +75,7 @@ void WiFi_setup () {
     wm.addParameter(&wm_nodeRED_ServerUrl);
     wm.addParameter(&wm_ntpServer);
     wm.addParameter(&wm_localTimeZone);
+    wm.addParameter(&wm_batteryCapacity);
     
     // set wm values
     char buff[33];
@@ -83,6 +88,7 @@ void WiFi_setup () {
     wm_nodeRED_ServerUrl.setValue(nodeRED_ServerUrl, sizeof(nodeRED_ServerUrl));
     wm_ntpServer.setValue(ntpServer, sizeof(ntpServer));
     wm_localTimeZone.setValue(localTimeZone, sizeof(localTimeZone));
+    */
 
     
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
@@ -240,6 +246,7 @@ void WiFi_onEvent(WiFiEvent_t event){
 }
 
 
+/*
 void WiFi_onSaveParams() {
 
     strcpy(friendlyName, wm_friendlyName.getValue());
@@ -254,3 +261,4 @@ void WiFi_onSaveParams() {
     webSockets_getTally();
 
 }
+*/
