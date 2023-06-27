@@ -43,6 +43,7 @@ void webSockets_onLoop() {
         doc["MessageData"]["batCurrent"] = pwr.batCurrent;
         doc["MessageData"]["batChargeCurrent"] = pwr.batChargeCurrent;
         doc["MessageData"]["maxChargeCurrent"] = pwr.chargeCurrent;
+        doc["MessageData"]["coulomb_count"] = pwr.coulomb_count;
         doc["MessageData"]["tempInAXP192"] = pwr.tempInAXP192;
         doc["MessageData"]["powerMode"] = pwr.powerMode;
         doc["MessageData"]["currentBrightness"] = currentBrightness;

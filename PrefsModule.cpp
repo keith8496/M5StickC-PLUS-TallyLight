@@ -1,6 +1,7 @@
 #include <Preferences.h>
 #include <WiFiManager.h>
 #include "NetworkModule.h"
+#include "WebSocketsModule.h"
 
 
 WiFiManagerParameter wm_friendlyName("friendlyName", "Friendly Name");
@@ -89,6 +90,6 @@ void WiFi_onSaveParams() {
     batteryCapacity = atoi(wm_batteryCapacity.getValue());
 
     preferences_save();
-    //webSockets_getTally();
+    webSockets_getTally();
 
 }
