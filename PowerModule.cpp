@@ -5,12 +5,6 @@
 #include "ScreenModule.h"
 #include "PrefsModule.h"
 
-/*
-#define Vmax 4200
-#define Vmin 3000
-#define Amp 1000
-*/
-
 
 power pwr;
 millisDelay md_power;
@@ -22,29 +16,35 @@ RunningAverage ravg_batCurrent(60);
 float coulomb_adjust = 0;
 
 
+const int batLookupElements = 21;
+const int batLookup[batLookupElements][2] = {
+  {420, 100}, 
+  {415, 95}, 
+  {411, 90}, 
+  {408, 85}, 
+  {402, 80}, 
+  {398, 75}, 
+  {395, 70}, 
+  {391, 65}, 
+  {387, 60}, 
+  {385, 55}, 
+  {384, 50}, 
+  {382, 45}, 
+  {380, 40}, 
+  {379, 35}, 
+  {377, 30}, 
+  {375, 25}, 
+  {373, 20}, 
+  {371, 15}, 
+  {369, 10}, 
+  {361, 5}, 
+  {327, 0}
+};
+
+
 // Define Functions
 void power_onLoop();
 void doPowerManagement();
-
-
-// from BatterySence https://github.com/rlogiacco/BatterySense
-/**
- * Symmetric sigmoidal approximation
- * https://www.desmos.com/calculator/7m9lu26vpy
- *
- * c - c / (1 + k*x/v)^3
- */
-//static inline uint8_t sigmoidal(uint16_t voltage, uint16_t minVoltage, uint16_t maxVoltage) {
-	// slow
-	// uint8_t result = 110 - (110 / (1 + pow(1.468 * (voltage - minVoltage)/(maxVoltage - minVoltage), 6)));
-
-	// steep
-	// uint8_t result = 102 - (102 / (1 + pow(1.621 * (voltage - minVoltage)/(maxVoltage - minVoltage), 8.1)));
-
-	// normal
-//	uint8_t result = 105 - (105 / (1 + pow(1.724 * (voltage - minVoltage)/(maxVoltage - minVoltage), 5.5)));
-//	return result >= 100 ? 100 : result;
-//}
 
 
 void power_setup() {
@@ -84,13 +84,6 @@ void doPowerManagement() {
   ravg_batVoltage.addValue(batVoltageNow);
   pwr.batVoltage = ravg_batVoltage.getFastAverage();
 
-  /*
-  const float batPercentageNow = (float)sigmoidal(batVoltageNow*1000, Vmin, Vmax);
-  ravg_batPercentage.addValue(batPercentageNow);
-  pwr.batPercentage = ravg_batPercentage.getFastAverage();
-  pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
-  */
-
   pwr.coulomb_count = M5.Axp.GetCoulombData();
   if (pwr.coulomb_count > 0) {
       coulomb_adjust = coulomb_adjust + pwr.coulomb_count;
@@ -100,14 +93,24 @@ void doPowerManagement() {
       M5.Axp.ClearCoulombcounter();
   }
 
-  const float batPercentageNow = (batteryCapacity + pwr.coulomb_count) / batteryCapacity * 100;
-  ravg_batPercentage.addValue(batPercentageNow);
+  //const float batPercentageNow = (batteryCapacity + pwr.coulomb_count) / batteryCapacity * 100;
+  if (pwr.batVoltage >= 4.2) {
+    ravg_batPercentage.addValue(100.0);
+  } else {
+    int batVoltageInt = batVoltageNow * 100;
+    for (int i = 0; i < batLookupElements; i++ ) {
+      if (batLookup[i][0] <= batVoltageInt) {
+        int batPercentageInt = map(batVoltageInt, batLookup[i-1][0], batLookup[i][0], batLookup[i-1][1], batLookup[i][1]);
+        ravg_batPercentage.addValue(batPercentageInt);
+        break;
+      }
+    }
+  }
+    
   pwr.batPercentage = ravg_batPercentage.getFastAverage();
   pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
-
   ravg_batCurrent.addValue(M5.Axp.GetBatCurrent());
   pwr.batCurrent = ravg_batCurrent.getFastAverage();
-  
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
   pwr.vbusVoltage = M5.Axp.GetVBusVoltage();
   pwr.vbusCurrent = M5.Axp.GetVBusCurrent();
@@ -139,7 +142,7 @@ void doPowerManagement() {
 
     // Charge to Off
     if (md_chargeToOff.justFinished()) {
-      if (pwr.batPercentage_M >= 100) {
+      if (ravg_batVoltage.getMaxInBuffer() >= (4.2*0.95) && pwr.batChargeCurrent == 0) {
         // 100% battery after 15 minutes => PowerOff
         M5.Axp.PowerOff();
       } else {
