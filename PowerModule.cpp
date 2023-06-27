@@ -179,6 +179,8 @@ void doPowerManagement() {
       strcpy(pwr.powerMode, "Balanced");
       pwr.maxBrightness = 12;
       //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+    } else if (strcmp(pwr.batWarningLevel, "LOW BATTERY") == 0) {
+      strcpy(pwr.powerMode, "Low Battery");
     } else {
       strcpy(pwr.powerMode, "Power Saver");
       pwr.maxBrightness = 9;
