@@ -1,6 +1,7 @@
 struct power {
     char batWarningLevel[17] = "";
     char powerMode[17] = "";
+    float coulomb_count = 0;
     float batVoltage = 0;
     float batPercentage = 0;
     float batPercentage_M = 0;
