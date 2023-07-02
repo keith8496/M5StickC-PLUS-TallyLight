@@ -181,3 +181,19 @@ void webSockets_getTally() {
     ws.sendTXT("{\"deviceId\": \"" + String(deviceId) + "\", " +
                 "\"MessageType\": \"GetTally\"}");
 }
+
+
+void webSockets_returnTally(int tallyIndicator) {
+        
+        StaticJsonDocument<128> doc;
+        
+        doc["deviceId"] = deviceId;
+        doc["MessageType"] = "ReturnTally";
+        doc["MessageData"]["friendlyName"] = friendlyName;
+        doc["MessageData"]["tallyIndicator"] = tallyIndicator;
+
+        String json;
+        json.reserve(128);
+        serializeJson(doc, json);
+        ws.sendTXT(json);
+}

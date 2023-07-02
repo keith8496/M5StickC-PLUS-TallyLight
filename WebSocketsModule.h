@@ -5,3 +5,4 @@ extern int atem_pvw1_input_id;
 void webSockets_setup();
 void webSockets_onLoop();
 void webSockets_getTally();
+void webSockets_returnTally(int tallyIndicator);
