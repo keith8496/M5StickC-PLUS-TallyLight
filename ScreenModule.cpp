@@ -28,6 +28,8 @@ struct startupLogData {
 startupLogData startupLogEntries[20];
 int index_startupLog = -1;
 
+int prevTally = 0;
+
 
 void refreshTallyScreen() {
 
@@ -42,11 +44,14 @@ void refreshTallyScreen() {
     }
 
     if (isProgram) {
-        tallyScreen.fillRect(0,0,240,135, TFT_RED);
+        tallyScreen.fillRect(0,0,240,135, TFT_RED);\
+        if (prevTally != 2) {prevTally = 2; webSockets_returnTally(2);}
     } else if (isPreview) {
         tallyScreen.fillRect(0,0,240,135, TFT_GREEN);
+        if (prevTally != 1) {prevTally = 1; webSockets_returnTally(1);}
     } else {
         tallyScreen.fillRect(0,0,240,135, TFT_BLACK);
+        if (prevTally != 0) {prevTally = 0; webSockets_returnTally(0);}
     }
     
     // Battery
