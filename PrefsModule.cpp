@@ -15,7 +15,7 @@ WiFiManagerParameter wm_localTimeZone("localTimeZone", "Local Timezone (restart 
 
 Preferences preferences;
 char friendlyName[17];
-uint16_t inputIds = 0b0000000000000001;
+//uint16_t inputIds = 0b0000000000000001;
 char nodeRED_ServerIP[16];
 int nodeRED_ServerPort;
 char nodeRED_ServerUrl[33];

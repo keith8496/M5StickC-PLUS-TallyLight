@@ -32,14 +32,14 @@ void webSockets_onLoop() {
         
         md_sendStatus.repeat();
         
-        char buff[17];
-        ultoa(inputIds, buff, 2);
+        //char buff[17];
+        //ultoa(inputIds, buff, 2);
         StaticJsonDocument<512> doc;
         
         doc["deviceId"] = deviceId;
         doc["MessageType"] = "DeviceStatus";
         doc["MessageData"]["friendlyName"] = friendlyName;
-        doc["MessageData"]["inputIds"] = buff;
+        //doc["MessageData"]["inputIds"] = buff;
         doc["MessageData"]["batVoltage"] = pwr.batVoltage;
         doc["MessageData"]["batPercentage"] = pwr.batPercentage;
         doc["MessageData"]["batCurrent"] = pwr.batCurrent;
