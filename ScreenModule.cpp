@@ -36,12 +36,17 @@ void refreshTallyScreen() {
     bool isProgram = false;
     bool isPreview = false;
     
+    /*
     // Bitshift on inputIds. Rightmost bit = input 1
     for (int i = 1; i <= 16; i++) {
         bool bitValue = (inputIds >> i-1) & 0x01;
         if ((bitValue) & (i == atem_pgm1_input_id)) isProgram = true;
         if ((bitValue) & (i == atem_pvw1_input_id)) isPreview = true;
     }
+    */
+
+   if (strcmp(friendlyName, atem_pgm1_friendlyName) == 0) isProgram = true;
+   if (strcmp(friendlyName, atem_pvw1_friendlyName) == 0) isPreview = true;
 
     if (isProgram) {
         tallyScreen.fillRect(0,0,240,135, TFT_RED);\

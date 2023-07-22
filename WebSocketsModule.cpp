@@ -12,6 +12,8 @@ bool ws_isConnected = false;
 
 int atem_pgm1_input_id = 0;
 int atem_pvw1_input_id = 0;
+char atem_pgm1_friendlyName[17] = "";
+char atem_pvw1_friendlyName[17] = "";
 
 millisDelay md_sendStatus;
 
@@ -30,14 +32,14 @@ void webSockets_onLoop() {
         
         md_sendStatus.repeat();
         
-        char buff[17];
-        ultoa(inputIds, buff, 2);
+        //char buff[17];
+        //ultoa(inputIds, buff, 2);
         StaticJsonDocument<512> doc;
         
         doc["deviceId"] = deviceId;
         doc["MessageType"] = "DeviceStatus";
         doc["MessageData"]["friendlyName"] = friendlyName;
-        doc["MessageData"]["inputIds"] = buff;
+        //doc["MessageData"]["inputIds"] = buff;
         doc["MessageData"]["batVoltage"] = pwr.batVoltage;
         doc["MessageData"]["batPercentage"] = pwr.batPercentage;
         doc["MessageData"]["batCurrent"] = pwr.batCurrent;
@@ -162,17 +164,26 @@ void webSockets_onTally(DynamicJsonDocument doc) {
     } else if (strcmp(EventType, "atem_pgm1_input_id") == 0) {
         EventValue = doc["MessageData"][EventType];
         atem_pgm1_input_id = EventValue;
+        const char* tmp_atem_pgm1_friendlyName = doc["MessageData"]["atem_pgm1_friendlyName"];
+        strcpy(atem_pgm1_friendlyName, tmp_atem_pgm1_friendlyName);
     } else if (strcmp(EventType, "atem_pvw1_input_id") == 0) {
         EventValue = doc["MessageData"][EventType];
         atem_pvw1_input_id = EventValue;
+        const char* tmp_str_atem_pvw1_friendlyName = doc["MessageData"]["atem_pvw1_friendlyName"];
+        strcpy(atem_pvw1_friendlyName, tmp_str_atem_pvw1_friendlyName);
     }
 
-    /*Serial.print("Source: ");
+    /*
+    Serial.print("Source: ");
     Serial.println(Source);
     Serial.print("EventType: ");
     Serial.println(EventType);
     Serial.print("EventValue: ");
-    Serial.println(EventValue);*/
+    Serial.println(EventValue);
+    Serial.print("friendlyName: ");
+    Serial.println(atem_pvw1_friendlyName);
+    Serial.println(atem_pgm1_friendlyName);
+    */
 
 }
 
