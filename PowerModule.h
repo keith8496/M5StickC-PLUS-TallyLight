@@ -4,7 +4,7 @@ struct power {
     float coulomb_count = 0;
     float batVoltage = 0;
     float batPercentage = 0;
-    float batPercentage_M = 0;
+    float batPercentageMin = 0;
     float batCurrent = 0;
     float batChargeCurrent = 0;
     float vbusVoltage = 0;
