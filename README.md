@@ -8,16 +8,16 @@ This project is currently in early development and not yet functional.
 First Milestones (July 2023):
 - [ x ] WiFi & NTP
 - [ x ] Initial websockets interface with Node-RED
-- [wip] Node-RED dashboard to show tally status, messages, etc
+- [ x ] Node-RED dashboard to show tally status, messages, etc
 - [ x ] Basic tally light functionality
 - [ x ] M5StickC-Plus basic power management
 
 Secondary Goals:
-- [   ] Expand on config/parameters with WiFiManager and Node-RED
+- [ x ] Expand on config/parameters with WiFiManager and Node-RED
 - [   ] Messaging from producer to tally clients
 
 Stretch Goals:
-- [   ] Advanced power management
+- [wip] Advanced power management
 - [   ] Migrate to M5Stack Core or Core2
 - [   ] Integrate with Planning Center Online
 - [   ] Integrate with ProPresenter
