@@ -97,7 +97,7 @@ void doPowerManagement() {
   if (pwr.batVoltage >= 4.2) {
     ravg_batPercentage.addValue(100.0);
   } else {
-    int batVoltageInt = batVoltageNow * 100;
+    const int batVoltageInt = batVoltageNow * 100;
     for (int i = 0; i < batLookupElements; i++ ) {
       if (batLookup[i][0] <= batVoltageInt) {
         int batPercentageInt = map(batVoltageInt, batLookup[i-1][0], batLookup[i][0], batLookup[i-1][1], batLookup[i][1]);
@@ -108,7 +108,7 @@ void doPowerManagement() {
   }
     
   pwr.batPercentage = ravg_batPercentage.getFastAverage();
-  pwr.batPercentage_M = ravg_batPercentage.getMaxInBuffer();
+  pwr.batPercentageMin = ravg_batPercentage.getMinInBuffer();
   ravg_batCurrent.addValue(M5.Axp.GetBatCurrent());
   pwr.batCurrent = ravg_batCurrent.getFastAverage();
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
@@ -123,19 +123,20 @@ void doPowerManagement() {
   // Power Mode
   if (pwr.vinVoltage > 3.8) {         // 5v IN Charge
     
+    strcpy(pwr.powerMode, "5v Charge");
     pwr.maxBrightness = 12;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);  //WIFI_PS_NONE
 
-    if ((pwr.batPercentage_M < 80) && (pwr.chargeCurrent != 780)) {
-      strcpy(pwr.powerMode, "Fast Charge");
+    if ((pwr.batPercentageMin < 70) && (pwr.chargeCurrent != 780)) {
       pwr.chargeCurrent = 780;
       M5.Axp.Write1Byte(0x33, 0xc8);
-    } else if (pwr.batPercentage_M >= 80 && pwr.batPercentage_M < 90 && pwr.chargeCurrent != 280) {
-      strcpy(pwr.powerMode, "Performance");
+    } else if (pwr.batPercentageMin >= 70 && pwr.batPercentageMin < 80 && pwr.chargeCurrent != 550) {
+      pwr.chargeCurrent = 550;
+      M5.Axp.Write1Byte(0x33, 0xc5);
+    } else if (pwr.batPercentageMin >= 80 && pwr.batPercentageMin < 90 && pwr.chargeCurrent != 280) {
       pwr.chargeCurrent = 280;
       M5.Axp.Write1Byte(0x33, 0xc2);
-    } else if (pwr.batPercentage_M >= 90 && pwr.chargeCurrent != 190) {
-      strcpy(pwr.powerMode, "Performance");
+    } else if (pwr.batPercentageMin >= 90 && pwr.chargeCurrent != 190) {
       pwr.chargeCurrent = 190;
       M5.Axp.Write1Byte(0x33, 0xc1);
     }
@@ -157,7 +158,7 @@ void doPowerManagement() {
 
   } else if (pwr.vbusVoltage > 3.8) {   // 5v USB Charge
 
-    strcpy(pwr.powerMode, "Performance");
+    strcpy(pwr.powerMode, "USB Charge");
     pwr.maxBrightness = 12;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     
@@ -175,7 +176,7 @@ void doPowerManagement() {
       M5.Axp.Write1Byte(0x33, 0xc0);
     }
 
-    if (pwr.batPercentage_M >= 80) {
+    if (pwr.batPercentageMin >= 70) {
       strcpy(pwr.powerMode, "Balanced");
       pwr.maxBrightness = 12;
       //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
