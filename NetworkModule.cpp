@@ -7,22 +7,8 @@
 #include "ScreenModule.h"
 
 WiFiManager wm;
-millisDelay md_setNtpTime;
-
-/*
-// Parameters
-WiFiManagerParameter wm_friendlyName("friendlyName", "Friendly Name");
-WiFiManagerParameter wm_inputIds("inputIds", "Input IDs (0000000000000001)");
-WiFiManagerParameter wm_nodeRED_ServerIP("nr_ServerIP", "Node-RED Server IP");
-WiFiManagerParameter wm_nodeRED_ServerPort("nr_ServerPort", "Node-RED Server Port");
-WiFiManagerParameter wm_nodeRED_ServerUrl("nr_ServerUrl", "Node-RED Server URL");
-WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
-WiFiManagerParameter wm_localTimeZone("localTimeZone", "Local Timezone (restart req)");
-WiFiManagerParameter wm_batteryCapacity("batteryCapacity", "Battery Capacity (mAh)");
-*/
-
+millisDelay ms_WiFi;
 Timezone localTime;
-bool time_isSet = false;
 
 
 // Define Functions
@@ -33,31 +19,7 @@ void WiFi_onSaveParams();
 
 
 void WiFi_onLoop() {
-    
     if (wm.getWebPortalActive()) wm.process();
-    
-    if (md_setNtpTime.justFinished()) {            
-        md_setNtpTime.stop();
-        
-        if (currentScreen == 0) startupLog("Initializing ezTime...", 1);
-
-        setServer(ntpServer);
-        waitForSync();
-        
-        if (!localTime.setCache("timezone", "localTime")) localTime.setLocation(localTimeZone);
-        localTime.setDefault();
-        time_isSet = true;
-
-        Serial.println("UTC Time: " + UTC.dateTime(ISO8601));
-        Serial.println("Local Time: " + localTime.dateTime(ISO8601));
-        
-        char buff[65];
-        strcpy(buff, "Local Time: ");
-        strcat(buff, localTime.dateTime(ISO8601).c_str());
-        if (currentScreen == 0) startupLog(buff, 1);
-
-    }
-
 }
 
 
@@ -65,59 +27,56 @@ void WiFi_setup () {
 
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFi_onEvent);
-        
-    /*
-    // wm_addParameters
-    wm.addParameter(&wm_friendlyName);
-    wm.addParameter(&wm_inputIds);
-    wm.addParameter(&wm_nodeRED_ServerIP);
-    wm.addParameter(&wm_nodeRED_ServerPort);
-    wm.addParameter(&wm_nodeRED_ServerUrl);
-    wm.addParameter(&wm_ntpServer);
-    wm.addParameter(&wm_localTimeZone);
-    wm.addParameter(&wm_batteryCapacity);
-    
-    // set wm values
-    char buff[33];
-    wm_friendlyName.setValue(friendlyName, sizeof(friendlyName));
-    ultoa(inputIds, buff, 2);
-    wm_inputIds.setValue(buff, sizeof(buff));
-    wm_nodeRED_ServerIP.setValue(nodeRED_ServerIP, sizeof(nodeRED_ServerIP));
-    itoa(nodeRED_ServerPort, buff, 10);
-    wm_nodeRED_ServerPort.setValue(buff, sizeof(buff));
-    wm_nodeRED_ServerUrl.setValue(nodeRED_ServerUrl, sizeof(nodeRED_ServerUrl));
-    wm_ntpServer.setValue(ntpServer, sizeof(ntpServer));
-    wm_localTimeZone.setValue(localTimeZone, sizeof(localTimeZone));
-    */
-
     
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
-    wm.setConfigPortalBlocking(false);    
+    wm.setConfigPortalBlocking(false);
     wm.setDebugOutput(false);
     wm.setSaveParamsCallback(WiFi_onSaveParams);
     wm.setClass("invert");                          // set dark theme
     wm.setCountry("US");
     wm.setHostname(deviceName);
+    wm.setWiFiAutoReconnect(true);
     
     if (!wm.autoConnect(deviceName)) {
-        if (currentScreen == 1) startupLog("Config Portal Started",1);
+        if (currentScreen == 0) {
+            startupLog("No access point found!",1);
+            startupLog("Config Portal Started.\r\nPress M5 to abort.",1);
+        }
         while (wm.getConfigPortalActive()) {
             wm.process();
             M5.update();
-            if (M5.BtnA.wasReleased()) {
-                wm.stopConfigPortal();
-            }
+            if (M5.BtnA.wasReleased()) wm.stopConfigPortal();
         }
-        if (currentScreen == 1) startupLog("Config Portal Stopped",1);
+        if (currentScreen == 0) startupLog("Config Portal Stopped...",1);
+        ESP.restart();
     }
 
-    md_setNtpTime.start(1000);
+    // ezTime
+    if (currentScreen == 0) startupLog("Initializing ezTime...", 1);
+    if (!localTime.setCache("timezone", "localTime")) localTime.setLocation(localTimeZone);
+    localTime.setDefault();
+    setServer(ntpServer);
+    if (wm.getWLStatusString() != "WL_CONNECTED") {
+        if (currentScreen == 0) startupLog("ezTime initialization incomplete...", 1);
+        return;
+    }
+    waitForSync(60);
+    if (timeStatus() == timeSet) {
+        Serial.println("UTC Time: " + UTC.dateTime(ISO8601));
+        Serial.println("Local Time: " + localTime.dateTime(ISO8601));
+        char buff[65];
+        strcpy(buff, "Local Time: ");
+        strcat(buff, localTime.dateTime(ISO8601).c_str());
+        if (currentScreen == 0) startupLog(buff, 1);
+    } else {
+        if (currentScreen == 0) startupLog("ezTime initialization failed...", 1);
+    }
     
 }
 
 
-void WiFi_onEvent(WiFiEvent_t event){
+void WiFi_onEvent(WiFiEvent_t event) {
   
   //Serial.printf("[WiFi-event] event: %d\n", event);
 
@@ -140,7 +99,7 @@ void WiFi_onEvent(WiFiEvent_t event){
           break;
       
       case ARDUINO_EVENT_WIFI_STA_CONNECTED:          
-          Serial.println(F("Connected to access point"));     
+          Serial.println(F("Connected to access point"));
           break;
 
       case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -154,6 +113,7 @@ void WiFi_onEvent(WiFiEvent_t event){
       case ARDUINO_EVENT_WIFI_STA_GOT_IP:
           Serial.print(F("Obtained IP address: "));
           Serial.println(WiFi.localIP());
+          updateNTP();
           if (currentScreen == 0) {
             char buff[65];
             strcpy(buff, "Obtained IP address: ");
@@ -244,21 +204,3 @@ void WiFi_onEvent(WiFiEvent_t event){
   }
 
 }
-
-
-/*
-void WiFi_onSaveParams() {
-
-    strcpy(friendlyName, wm_friendlyName.getValue());
-    inputIds = static_cast<uint16_t>(strtol(wm_inputIds.getValue(), NULL, 2));
-    strcpy(nodeRED_ServerIP, wm_nodeRED_ServerIP.getValue());
-    nodeRED_ServerPort = atoi(wm_nodeRED_ServerPort.getValue());
-    strcpy(nodeRED_ServerUrl, wm_nodeRED_ServerUrl.getValue());
-    strcpy(ntpServer, wm_ntpServer.getValue());
-    strcpy(localTimeZone, wm_localTimeZone.getValue());
-
-    preferences_save();
-    webSockets_getTally();
-
-}
-*/

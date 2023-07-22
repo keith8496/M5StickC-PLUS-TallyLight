@@ -29,8 +29,6 @@ void setup () {
     setCpuFrequencyMhz(80); //Save battery by turning down the CPU clock
     btStop();               //Save battery by turning off Bluetooth
 
-    ms_startup.start(30000);
-
     // Set deviceId and deviceName
     uint8_t macAddress[6];
     WiFi.macAddress(macAddress);
@@ -46,6 +44,7 @@ void setup () {
     power_setup();
     startupLog("Initializing WiFi...", 1);
     WiFi_setup();
+    ms_startup.start(30000);
     startupLog("Initializing webSockets...", 1);
     webSockets_setup();
 
@@ -53,11 +52,16 @@ void setup () {
         WiFi_onLoop();
         webSockets_onLoop();
         power_onLoop();
-        if (ws_isConnected & time_isSet) ms_startup.stop();
-        if (ms_startup.justFinished()) ms_startup.stop();
+        if (ws_isConnected & (timeStatus() == timeSet)) {
+            ms_startup.stop();
+            startupLog("Startup complete.", 1);
+        }
+        if (ms_startup.justFinished()) {
+            ms_startup.stop();
+            startupLog("Startup incomplete.", 1);
+        }
     }
     
-    startupLog("Startup complete.", 1);
     startupLog("", 1);
     startupLog("Press \"M5\" button \r\nto continue.", 2);
 
@@ -71,6 +75,7 @@ void setup () {
 void loop () {
 
     M5.update();
+    events();               // ezTime
     WiFi_onLoop();
     webSockets_onLoop();
     power_onLoop();

@@ -51,7 +51,7 @@ void webSockets_onLoop() {
         doc["MessageData"]["currentBrightness"] = currentBrightness;
         doc["MessageData"]["currentScreen"] = currentScreen;
         doc["MessageData"]["webPortalActive"] = wm.getWebPortalActive();
-        doc["MessageData"]["ntp"] = time_isSet;
+        doc["MessageData"]["ntp"] = String(timeStatus());
         doc["MessageData"]["ssid"] = String(wm.getWiFiSSID());
         doc["MessageData"]["rssi"] = String(WiFi.RSSI());
         doc["MessageData"]["ip"] = WiFi.localIP().toString();
