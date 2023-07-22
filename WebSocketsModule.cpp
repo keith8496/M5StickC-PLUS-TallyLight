@@ -164,13 +164,11 @@ void webSockets_onTally(DynamicJsonDocument doc) {
     } else if (strcmp(EventType, "atem_pgm1_input_id") == 0) {
         EventValue = doc["MessageData"][EventType];
         atem_pgm1_input_id = EventValue;
-        //String str_atem_pgm1_friendlyName = doc["MessageData"]["atem_pgm1_friendlyName"];
         const char* tmp_atem_pgm1_friendlyName = doc["MessageData"]["atem_pgm1_friendlyName"];
         strcpy(atem_pgm1_friendlyName, tmp_atem_pgm1_friendlyName);
     } else if (strcmp(EventType, "atem_pvw1_input_id") == 0) {
         EventValue = doc["MessageData"][EventType];
         atem_pvw1_input_id = EventValue;
-        //String str_atem_pvw1_friendlyName = doc["MessageData"]["atem_pvw1_friendlyName"];
         const char* tmp_str_atem_pvw1_friendlyName = doc["MessageData"]["atem_pvw1_friendlyName"];
         strcpy(atem_pvw1_friendlyName, tmp_str_atem_pvw1_friendlyName);
     }
