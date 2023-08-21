@@ -1,9 +1,7 @@
 # M5StickC-PLUS-TallyLight
 A camera tally light project using the M5StickC-Plus and Node-RED. This project is largely inspired by the [Tally Arbiter](http://tallyarbiter.com/) project written by Joseph Adams.
 
-I am currently using [Companion](https://bitfocus.io/companion) to integrate with our ATEM 1 M/E Constellation HD and send websocket messages to Node-RED. Node-RED will provide a websockets server and handle most of the logic.
-
-This project is currently in early development and not yet functional.
+We have been using this project at our church for about two months.
 
 First Milestones (July 2023):
 - [ x ] WiFi & NTP
@@ -17,7 +15,7 @@ Secondary Goals:
 - [   ] Messaging from producer to tally clients
 
 Stretch Goals:
-- [wip] Advanced power management
+- [ x ] Advanced power management
 - [   ] Migrate to M5Stack Core or Core2
 - [   ] Integrate with Planning Center Online
 - [   ] Integrate with ProPresenter
