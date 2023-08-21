@@ -94,7 +94,7 @@ void refreshPowerScreen() {
     powerScreen.println(pwr.powerMode);
     powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.4fmAh)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, pwr.coulomb_count);
     powerScreen.printf("  I: %.3fma  I: %.3fma\r\n", pwr.batCurrent, pwr.batChargeCurrent);
-    powerScreen.printf("  Imax: %ima  Bmin: %.f%%\r\n", pwr.chargeCurrent, pwr.batPercentageMin);
+    powerScreen.printf("  Imax: %ima  Bmin: %.f%%  SB: %i\r\n", pwr.chargeCurrent, pwr.batPercentageMin, currentBrightness);
     powerScreen.printf("USB:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vbusVoltage, pwr.vbusCurrent);
     powerScreen.printf("5V-In:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vinVoltage, pwr.vinCurrent);
     powerScreen.printf("APS:\r\n  V: %.3fv\r\n", pwr.apsVoltage);
@@ -106,6 +106,22 @@ void refreshPowerScreen() {
 
 
 void refreshSetupScreen() {
+
+    String strTimeStatus;
+    strTimeStatus.reserve(14);
+    switch (timeStatus()) {
+        case (timeNotSet):
+            strTimeStatus= "timeNotSet";
+            break;
+        case (timeNeedsSync):
+            strTimeStatus = "timeNeedsSync";
+            break;
+        case (timeSet):
+            strTimeStatus = "timeSet";
+            break;
+        default:
+            break;
+    }
     
     setupScreen.fillSprite(TFT_BLACK);
     setupScreen.setTextColor(TFT_WHITE);
@@ -118,7 +134,7 @@ void refreshSetupScreen() {
     setupScreen.println("Webportal Active: " + String(wm.getWebPortalActive()));
     setupScreen.println("Hostname: " + wm.getWiFiHostname());
     setupScreen.println("IP: " + WiFi.localIP().toString());
-    setupScreen.println("NTP: " + String(time_isSet));
+    setupScreen.println("NTP: " + strTimeStatus);
     setupScreen.println();
     setupScreen.println("Node-RED Server: " + String(nodeRED_ServerIP) + ":" + String(nodeRED_ServerPort));
     setupScreen.println("Connected: " + String(ws_isConnected));

@@ -151,7 +151,7 @@ void doPowerManagement() {
         md_chargeToOff.start(60000);
       }
     }
-    if (md_chargeToOff.isRunning() && md_chargeToOff.remaining() <= 600000) {
+    if (md_chargeToOff.isRunning() && md_chargeToOff.remaining() <= 600000 && currentBrightness <= 8) {
       // We have been on the power screen for >= 5 minutes (900000 - 300000 = 600000)
       strcpy(pwr.powerMode, "Charge-to-Off");
     }

@@ -51,7 +51,7 @@ void webSockets_onLoop() {
         doc["MessageData"]["currentBrightness"] = currentBrightness;
         doc["MessageData"]["currentScreen"] = currentScreen;
         doc["MessageData"]["webPortalActive"] = wm.getWebPortalActive();
-        doc["MessageData"]["ntp"] = time_isSet;
+        doc["MessageData"]["ntp"] = String(timeStatus());
         doc["MessageData"]["ssid"] = String(wm.getWiFiSSID());
         doc["MessageData"]["rssi"] = String(WiFi.RSSI());
         doc["MessageData"]["ip"] = WiFi.localIP().toString();
@@ -95,7 +95,7 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         
         case WStype_CONNECTED:
             ws_isConnected = true;
-            Serial.println("Websockets connected.");
+            Serial.println(F("Websockets connected."));
             if (currentScreen == 0) startupLog("Websockets connected.", 1);
             webSockets_getTally();
             md_sendStatus.start(60000);
@@ -105,13 +105,18 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
         
             DynamicJsonDocument doc(length);
             DeserializationError error = deserializeJson(doc, payload, length);
-            const char* MessageType = doc["MessageType"];
 
+            if (error.code() != DeserializationError::Ok) {
+                Serial.print(F("deserializeJson() failed: "));
+                Serial.println(error.c_str());
+                break;
+            }
+            
+            const char* MessageType = doc["MessageType"];
             if (MessageType == nullptr) {
                 Serial.println(F("MessageType is nullptr"));
                 return;
             } else if (strcmp(MessageType, "SetTally") == 0) {
-                //Serial.println(F("SetTally"));
                 webSockets_onTally(doc);
             }
             
@@ -151,24 +156,34 @@ void webSockets_onEvent(WStype_t type, uint8_t* payload, size_t length) {
 
 void webSockets_onTally(DynamicJsonDocument doc) {
 
-    /*Serial.println("webSockets_onTally()");
+    /*
+    Serial.println(F("webSockets_onTally()"));
     serializeJson(doc, Serial);
-    Serial.println();*/
+    Serial.println();
+    */
     
     const char* Source = doc["deviceId"];
     const char* EventType = doc["MessageData"]["EventType"];
     int EventValue;
 
+    Serial.println(F("webSockets_onTally() if/then/else"));
     if (Source == nullptr || EventType == nullptr) {
+        Serial.println(F("nullptr"));
         return;
     } else if (strcmp(EventType, "atem_pgm1_input_id") == 0) {
+        //Serial.println(F("webSockets_onTally() atem_pgm1_input_id"));
+        //Serial.println(F("webSockets_onTally() EventValue"));
         EventValue = doc["MessageData"][EventType];
         atem_pgm1_input_id = EventValue;
+        //Serial.println(F("webSockets_onTally() EventValue Success"));
         const char* tmp_atem_pgm1_friendlyName = doc["MessageData"]["atem_pgm1_friendlyName"];
         strcpy(atem_pgm1_friendlyName, tmp_atem_pgm1_friendlyName);
     } else if (strcmp(EventType, "atem_pvw1_input_id") == 0) {
+        //Serial.println(F("webSockets_onTally() atem_pvw1_input_id"));
+        //Serial.println(F("webSockets_onTally() EventValue"));
         EventValue = doc["MessageData"][EventType];
         atem_pvw1_input_id = EventValue;
+        //Serial.println(F("webSockets_onTally() EventValue Success"));
         const char* tmp_str_atem_pvw1_friendlyName = doc["MessageData"]["atem_pvw1_friendlyName"];
         strcpy(atem_pvw1_friendlyName, tmp_str_atem_pvw1_friendlyName);
     }
