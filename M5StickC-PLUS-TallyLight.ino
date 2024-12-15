@@ -32,6 +32,8 @@ void setup () {
     // Set deviceId and deviceName
     uint8_t macAddress[6];
     WiFi.macAddress(macAddress);
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
     sprintf(deviceId, "%02X%02X%02X", macAddress[3], macAddress[4], macAddress[5]);
     strcpy(deviceName, "M5StickC-Plus-");
     strcat(deviceName, deviceId);
