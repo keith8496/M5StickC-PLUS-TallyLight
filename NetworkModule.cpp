@@ -19,7 +19,7 @@ void WiFi_onSaveParams();
 
 
 void WiFi_onLoop() {
-    if (wm.getWebPortalActive()) wm.process();
+    if (wm.getConfigPortalActive()) wm.process();
 }
 
 
@@ -37,6 +37,7 @@ void WiFi_setup () {
     wm.setCountry("US");
     wm.setHostname(deviceName);
     wm.setWiFiAutoReconnect(true);
+    //wm.setAPCallback(configModeCallback);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 0) {
@@ -204,3 +205,4 @@ void WiFi_onEvent(WiFiEvent_t event) {
   }
 
 }
+

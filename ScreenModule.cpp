@@ -131,7 +131,7 @@ void refreshSetupScreen() {
     setupScreen.println();
     setupScreen.setTextSize(1);
     setupScreen.println("SSID: " + String(wm.getWiFiSSID()) + " " + String(WiFi.RSSI()));
-    setupScreen.println("Webportal Active: " + String(wm.getWebPortalActive()));
+    setupScreen.println("Webportal Active: " + String(wm.getConfigPortalActive()));
     setupScreen.println("Hostname: " + wm.getWiFiHostname());
     setupScreen.println("IP: " + WiFi.localIP().toString());
     setupScreen.println("NTP: " + strTimeStatus);
@@ -167,7 +167,7 @@ void changeScreen(int newScreen = -1) {
         currentScreen = newScreen;
     }
 
-    if (wm.getWebPortalActive()) wm.stopWebPortal();
+    if (wm.getConfigPortalActive()) wm.stopConfigPortal();
     set_chargeToPowerOff(0);
     
     startupScreen.deleteSprite();
@@ -200,7 +200,7 @@ void changeScreen(int newScreen = -1) {
             break;
         case 3:
             // setupScreen
-            if (!wm.getWebPortalActive()) wm.startWebPortal();
+            if (!wm.getConfigPortalActive()) wm.startConfigPortal(deviceName);
             setupScreen.createSprite(tft_width, tft_heigth);
             setupScreen.setRotation(3);
             break;
