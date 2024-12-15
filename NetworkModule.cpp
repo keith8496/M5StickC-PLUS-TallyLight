@@ -40,6 +40,7 @@ void WiFi_setup () {
     wm.setCountry("US");
     wm.setHostname(deviceName);
     wm.setWiFiAutoReconnect(true);
+    wm.setRemoveDuplicateAPs(false);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 0) {
