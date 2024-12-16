@@ -27,6 +27,9 @@ void WiFi_setup () {
 
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFi_onEvent);
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
+    WiFi.setAutoReconnect(true);
     
     std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
     wm.setMenu(menu);
@@ -37,6 +40,7 @@ void WiFi_setup () {
     wm.setCountry("US");
     wm.setHostname(deviceName);
     wm.setWiFiAutoReconnect(true);
+    wm.setRemoveDuplicateAPs(false);
     
     if (!wm.autoConnect(deviceName)) {
         if (currentScreen == 0) {
@@ -204,3 +208,4 @@ void WiFi_onEvent(WiFiEvent_t event) {
   }
 
 }
+
