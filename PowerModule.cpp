@@ -55,6 +55,8 @@ void power_setup() {
     ravg_batCurrent.fillValue(ravg_batCurrent.getValue(0),60);
     md_power.start(1000);
     md_powerOneMin.start(60000);
+    currentBrightness = 50;
+    setBrightness(currentBrightness);
 }
 
 
@@ -124,7 +126,7 @@ void doPowerManagement() {
   if (pwr.vinVoltage > 3.8) {         // 5v IN Charge
     
     strcpy(pwr.powerMode, "5v Charge");
-    pwr.maxBrightness = 12;
+    pwr.maxBrightness = 100;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);  //WIFI_PS_NONE
 
     if ((pwr.batPercentageMin < 70) && (pwr.chargeCurrent != 780)) {
@@ -151,7 +153,7 @@ void doPowerManagement() {
         md_chargeToOff.start(60000);
       }
     }
-    if (md_chargeToOff.isRunning() && md_chargeToOff.remaining() <= 600000 && currentBrightness <= 8) {
+    if (md_chargeToOff.isRunning() && md_chargeToOff.remaining() <= 600000 && currentBrightness <= 20) {
       // We have been on the power screen for >= 5 minutes (900000 - 300000 = 600000)
       strcpy(pwr.powerMode, "Charge-to-Off");
     }
@@ -159,7 +161,7 @@ void doPowerManagement() {
   } else if (pwr.vbusVoltage > 3.8) {   // 5v USB Charge
 
     strcpy(pwr.powerMode, "USB Charge");
-    pwr.maxBrightness = 12;
+    pwr.maxBrightness = 100;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     
     if (pwr.chargeCurrent != 100) {
@@ -178,18 +180,21 @@ void doPowerManagement() {
 
     if (pwr.batPercentageMin >= 70) {
       strcpy(pwr.powerMode, "Balanced");
-      pwr.maxBrightness = 12;
+      pwr.maxBrightness = 100;
       //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     } else if (strcmp(pwr.batWarningLevel, "LOW BATTERY") == 0) {
       strcpy(pwr.powerMode, "Low Battery");
     } else {
       strcpy(pwr.powerMode, "Power Saver");
-      pwr.maxBrightness = 9;
+      pwr.maxBrightness = 20;
       if (currentBrightness > pwr.maxBrightness) setBrightness(pwr.maxBrightness);
       //esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     }
 
   }
+
+  //Serial.printf("\n\rpwr.powerMode: %s", pwr.powerMode);
+  //Serial.printf("\n\rpwr.maxBrightness: %d", pwr.maxBrightness);
 
 }
 

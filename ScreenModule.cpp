@@ -157,6 +157,7 @@ void refreshStartupScreen() {
 
 void changeScreen(int newScreen = -1) {
 
+    Serial.println(F("changeScreen()"));
     if (newScreen < -1 || newScreen > maxScreen) {
         Serial.println(F("changeScreen() error: \"invalid screen number rejected\""));
         return;
@@ -240,13 +241,9 @@ void refreshScreen() {
 }
 
 
-void setBrightness(int newBrightness = 0) {
-    if (newBrightness >= 7 & newBrightness <= pwr.maxBrightness) {
-        currentBrightness = newBrightness;
-    } else {
-        currentBrightness++;
-        if (currentBrightness > pwr.maxBrightness) currentBrightness = 7;
-    }
+void setBrightness(int newBrightness) {
+    if (newBrightness > pwr.maxBrightness) newBrightness = 10;
+    currentBrightness = newBrightness;
     M5.Axp.ScreenBreath(currentBrightness);
 }
 

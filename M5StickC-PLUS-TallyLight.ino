@@ -61,7 +61,7 @@ void setup () {
             startupLog("Startup incomplete.", 1);
         }
     }
-    
+      
     startupLog("", 1);
     startupLog("Press \"M5\" button \r\nto continue.", 2);
 
@@ -87,7 +87,8 @@ void loop () {
 
     // Action Button
     if (M5.BtnB.wasReleased()) {
-        setBrightness(0);
+        int newBrightness = currentBrightness + 10;
+        setBrightness(newBrightness);
     }
 
     refreshScreen();
