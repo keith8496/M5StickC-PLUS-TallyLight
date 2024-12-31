@@ -3,6 +3,7 @@ struct power {
     char powerMode[17] = "";
     float coulomb_count = 0;
     float batVoltage = 0;
+    float batVoltageMin = 0;
     float batPercentage = 0;
     float batPercentageMin = 0;
     float batCurrent = 0;
@@ -21,4 +22,4 @@ extern power pwr;
 
 void power_setup();
 void power_onLoop();
-void set_chargeToPowerOff(unsigned int delay);
+//void set_chargeToPowerOff(unsigned int delay);
