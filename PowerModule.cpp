@@ -9,35 +9,40 @@
 power pwr;
 millisDelay md_power;
 millisDelay md_chargeToOff;
-const int runningAvgCnt = 60;
+const int runningAvgCnt = 100;
 RunningAverage ravg_batVoltage(runningAvgCnt);
 float coulomb_adjust = 0;
 
 
-const int batLookupElements = 21;
-const int batLookup[batLookupElements][2] = {
-  {420, 100}, 
-  {415, 95}, 
-  {411, 90}, 
-  {408, 85}, 
-  {402, 80}, 
-  {398, 75}, 
-  {395, 70}, 
-  {391, 65}, 
-  {387, 60}, 
-  {385, 55}, 
-  {384, 50}, 
-  {382, 45}, 
-  {380, 40}, 
-  {379, 35}, 
-  {377, 30}, 
-  {375, 25}, 
-  {373, 20}, 
-  {371, 15}, 
-  {369, 10}, 
-  {361, 5}, 
-  {327, 0}
-};
+// Function to estimate battery percentage with a non-linear discharge curve
+float getBatteryPercentage(float voltage) {
+    // Voltage-capacity segments for a single-cell LiPo battery
+    const float voltageLevels[] = {4.2, 4.0, 3.85, 3.7, 3.2};
+    const float percentageLevels[] = {100.0, 75.0, 50.0, 25.0, 0.0};
+    const int numLevels = sizeof(voltageLevels) / sizeof(voltageLevels[0]);
+
+    // Check for out-of-range values
+    if (voltage >= voltageLevels[0]) {
+        return 100.0; // Fully charged
+    } else if (voltage <= voltageLevels[numLevels - 1]) {
+        return 0.0;   // Fully discharged
+    }
+
+    // Interpolate within the appropriate segment
+    for (int i = 0; i < numLevels - 1; i++) {
+        if (voltage <= voltageLevels[i] && voltage > voltageLevels[i + 1]) {
+            // Linear interpolation between the two points
+            float percentage = percentageLevels[i] +
+                               (voltage - voltageLevels[i]) * 
+                               (percentageLevels[i + 1] - percentageLevels[i]) /
+                               (voltageLevels[i + 1] - voltageLevels[i]);
+            return percentage;
+        }
+    }
+
+    // Default return (should not reach here)
+    return 0.0;
+}
 
 
 // Define Functions
@@ -49,7 +54,7 @@ void power_setup() {
     M5.Axp.EnableCoulombcounter();
     doPowerManagement();
     ravg_batVoltage.fillValue(M5.Axp.GetBatVoltage(),runningAvgCnt);
-    md_power.start(1000);
+    md_power.start(100);
     currentBrightness = 50;
     setBrightness(currentBrightness);
 }
@@ -72,28 +77,25 @@ void doPowerManagement() {
   }
 
   pwr.coulomb_count = M5.Axp.GetCoulombData();
-  if (pwr.coulomb_count > 0) {
+  /*if (pwr.coulomb_count > 0) {
       coulomb_adjust = coulomb_adjust + pwr.coulomb_count;
       Serial.printf("\n\rCoulomb Count: %.4f", pwr.coulomb_count);
       Serial.printf("\n\rCoulomb Adjust: %.4f", coulomb_adjust);
       pwr.coulomb_count = 0;
       M5.Axp.ClearCoulombcounter();
+  }*/
+  if (pwr.coulomb_count > 0 || (pwr.batPercentage == 100 && floor(pwr.batChargeCurrent) == 0 && pwr.coulomb_count != 0)) {
+    pwr.coulomb_count = 0;
+    M5.Axp.ClearCoulombcounter();
   }
+  
   
   ravg_batVoltage.addValue(M5.Axp.GetBatVoltage());
   pwr.batVoltage = ravg_batVoltage.getAverage();
   pwr.batVoltageMin = ravg_batVoltage.getMinInBuffer();
   
-  const int batVoltageInt = pwr.batVoltage * 100;
-  const int batVoltageIntMin = pwr.batVoltageMin * 100;
-  for (int i = 0; i < batLookupElements; i++ ) {
-    if (batLookup[i][0] <= batVoltageInt) {
-      pwr.batPercentage = map(batVoltageInt, batLookup[i-1][0], batLookup[i][0], batLookup[i-1][1], batLookup[i][1]);
-      pwr.batPercentageMin = map(batVoltageIntMin, batLookup[i-1][0], batLookup[i][0], batLookup[i-1][1], batLookup[i][1]);
-      break;
-    }
-  }
-
+  pwr.batPercentage = getBatteryPercentage(pwr.batVoltage);
+  pwr.batPercentageMin = getBatteryPercentage(pwr.batVoltageMin);
   pwr.batCurrent = M5.Axp.GetBatCurrent();
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
   pwr.vbusVoltage = M5.Axp.GetVBusVoltage();
@@ -115,7 +117,7 @@ void doPowerManagement() {
       strcpy(pwr.powerMode, "5v Charge");
       if (md_chargeToOff.isRunning()) md_chargeToOff.stop();
 
-      if ((pwr.batPercentageMin < 70) && (pwr.chargeCurrent != 780)) {
+      if ((pwr.batPercentageMin < 75) && (pwr.chargeCurrent != 780)) {
         pwr.chargeCurrent = 780;
         M5.Axp.Write1Byte(0x33, 0xc8);
       } else if (pwr.batPercentageMin >= 70 && pwr.batPercentageMin < 80 && pwr.chargeCurrent != 550) {
@@ -131,16 +133,16 @@ void doPowerManagement() {
 
     } else {
 
+      // Charge to Off
       strcpy(pwr.powerMode, "Charge-to-Off");
-      if (!md_chargeToOff.isRunning()) md_chargeToOff.start(60000);
-      if (pwr.chargeCurrent != 190) {
-        pwr.chargeCurrent = 190;
-        M5.Axp.Write1Byte(0x33, 0xc1);
+      if (pwr.batVoltage >= 3.99 && floor(pwr.batChargeCurrent) == 0) M5.Axp.PowerOff();
+      if (pwr.chargeCurrent != 280) {
+        pwr.chargeCurrent = 280;
+        M5.Axp.Write1Byte(0x33, 0xc2);
       }
-
     }
 
-    // Charge to Off
+    /*// Charge to Off
     if (md_chargeToOff.justFinished() && pwr.powerMode == "Charge-to-Off") {
       if (ravg_batVoltage.getMaxInBuffer() >= (4.2*0.95) && pwr.batChargeCurrent == 0) {
         // 100% battery after 15 minutes => PowerOff
@@ -149,7 +151,7 @@ void doPowerManagement() {
         // Set 1 minute timer and wait for 100% battery
         md_chargeToOff.start(60000);
       }
-    }
+    }*/
 
   } else if (pwr.vbusVoltage > 3.8) {   // 5v USB Charge
 
@@ -190,8 +192,7 @@ void doPowerManagement() {
 
   }
 
-  //Serial.printf("\n\rpwr.powerMode: %s", pwr.powerMode);
-  //Serial.printf("\n\rpwr.maxBrightness: %d", pwr.maxBrightness);
+  Serial.printf("batChargeCurrent: %.3f", pwr.batChargeCurrent);
 
 }
 
