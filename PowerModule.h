@@ -3,9 +3,11 @@ struct power {
     char powerMode[17] = "";
     float coulomb_count = 0;
     float batVoltage = 0;
-    float batVoltageMin = 0;
+    //float batVoltageMin = 0;
+    //float batVoltageMax = 0;
     float batPercentage = 0;
     float batPercentageMin = 0;
+    float batPercentageMax = 0;
     float batCurrent = 0;
     float batChargeCurrent = 0;
     float vbusVoltage = 0;
