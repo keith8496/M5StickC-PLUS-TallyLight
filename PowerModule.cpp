@@ -8,8 +8,8 @@
 
 power pwr;
 millisDelay md_power;
-//millisDelay md_chargeToOff;
-const int runningAvgCnt = 100;
+millisDelay md_chargeToOff;
+const int runningAvgCnt = 600;
 RunningAverage ravg_batVoltage(runningAvgCnt);
 float coulomb_adjust = 0;
 
@@ -44,13 +44,6 @@ float getBatteryPercentage(float voltage) {
     return 0.0;
 }
 
-void checkCoulombCount() {
-  if ((pwr.vinVoltage > 3.8 || pwr.vbusVoltage > 3.8) && floor(pwr.chargeCurrent) == 0 && pwr.coulomb_count != 0) {
-    M5.Axp.ClearCoulombcounter();
-    pwr.coulomb_count = 0;
-  }
-};
-
 
 // Define Functions
 void power_onLoop();
@@ -62,8 +55,6 @@ void power_setup() {
     doPowerManagement();
     ravg_batVoltage.fillValue(M5.Axp.GetBatVoltage(),runningAvgCnt);
     md_power.start(100);
-    currentBrightness = 50;
-    setBrightness(currentBrightness);
 }
 
 
@@ -77,6 +68,8 @@ void power_onLoop() {
 
 void doPowerManagement() {
 
+  if (currentScreen != 2 && md_chargeToOff.isRunning()) md_chargeToOff.stop();
+  
   if (M5.Axp.GetWarningLevel()) {
     strcpy(pwr.batWarningLevel, "LOW BATTERY");
   } else {
@@ -84,9 +77,7 @@ void doPowerManagement() {
   }  
   
   ravg_batVoltage.addValue(M5.Axp.GetBatVoltage());
-  pwr.batVoltage = ravg_batVoltage.getAverage();
-  //pwr.batVoltageMin = ravg_batVoltage.getMinInBuffer();
-  //pwr.batVoltageMax = ravg_batVoltage.getMaxInBuffer();
+  pwr.batVoltage = ravg_batVoltage.getAverageLast(10);
   
   pwr.batPercentage = getBatteryPercentage(pwr.batVoltage);
   pwr.batPercentageMin = getBatteryPercentage(ravg_batVoltage.getMinInBuffer());
@@ -99,27 +90,28 @@ void doPowerManagement() {
   pwr.vinCurrent = M5.Axp.GetVinCurrent();
   pwr.apsVoltage = M5.Axp.GetAPSVoltage();
   pwr.tempInAXP192 = M5.Axp.GetTempInAXP192();
-  pwr.coulomb_count = M5.Axp.GetCoulombData();
+  pwr.coulombCount = M5.Axp.GetCoulombData();
+  pwr.batPercentageCoulomb = (2200 + pwr.coulombCount) / 2200 * 100;
 
 
   // Power Mode
   if (pwr.vinVoltage > 3.8) {         // 5v IN Charge
     
-    checkCoulombCount();
     pwr.maxBrightness = 100;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);  //WIFI_PS_NONE
     
     if (currentBrightness > 20) {
 
       strcpy(pwr.powerMode, "5v Charge");
+      md_chargeToOff.stop();
 
-      if ((pwr.batPercentage < 75) && (pwr.chargeCurrent != 780)) {
+      if ((pwr.batPercentageMin < 75) && (pwr.chargeCurrent != 780)) {
         pwr.chargeCurrent = 780;
         M5.Axp.Write1Byte(0x33, 0xc8);
-      } else if (pwr.batPercentage >= 75 && pwr.batPercentage < 90 && pwr.chargeCurrent != 550) {
+      } else if (pwr.batPercentageMin >= 75 && pwr.batPercentageMin < 90 && pwr.chargeCurrent != 550) {
         pwr.chargeCurrent = 550;
         M5.Axp.Write1Byte(0x33, 0xc5);
-      } else if (pwr.batPercentage >= 90 && pwr.batPercentage < 100 && pwr.chargeCurrent != 280) {
+      } else if (pwr.batPercentageMin >= 90 && pwr.batPercentageMin < 100 && pwr.chargeCurrent != 280) {
         pwr.chargeCurrent = 280;
         M5.Axp.Write1Byte(0x33, 0xc2);
       } /*else if (pwr.batPercentage >= 90 && pwr.chargeCurrent != 190) {
@@ -130,18 +122,32 @@ void doPowerManagement() {
     } else {
 
       // Charge to Off
-      strcpy(pwr.powerMode, "Charge-to-Off");
-      if (pwr.batVoltage >= 3.99 && floor(pwr.batChargeCurrent) == 0) M5.Axp.PowerOff();
+      if (md_chargeToOff.justFinished()) {
+        M5.Axp.ClearCoulombcounter();
+        M5.Axp.PowerOff();
+      }
+      
+      if (pwr.batVoltage >= 3.99 && floor(pwr.batChargeCurrent) == 0 && !md_chargeToOff.isRunning()) {
+        md_chargeToOff.start(60000);
+      }
+
+      if (md_chargeToOff.isRunning()) {
+        strcpy(pwr.powerMode, "Charge-to-Off <60");
+      } else {
+        strcpy(pwr.powerMode, "Charge-to-Off");
+      }
+      
       if (pwr.chargeCurrent != 280) {
         pwr.chargeCurrent = 280;
         M5.Axp.Write1Byte(0x33, 0xc2);
-      }
+      }     
+
     }
 
   } else if (pwr.vbusVoltage > 3.8) {   // 5v USB Charge
 
     strcpy(pwr.powerMode, "USB Charge");
-    checkCoulombCount();
+    md_chargeToOff.stop();
     pwr.maxBrightness = 100;
     //esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     
@@ -154,6 +160,7 @@ void doPowerManagement() {
     
     // 3v Battery
 
+    md_chargeToOff.stop();
     if (pwr.chargeCurrent != 100) {
       pwr.chargeCurrent = 100;
       M5.Axp.Write1Byte(0x33, 0xc0);

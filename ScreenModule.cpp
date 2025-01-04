@@ -84,8 +84,6 @@ void refreshTallyScreen() {
 
 void refreshPowerScreen() {
 
-    const float batChargeCoulomb = (2200 + pwr.coulomb_count) / 2200 * 100;
-
     powerScreen.fillSprite(TFT_BLACK);
     powerScreen.setTextColor(TFT_WHITE);
     powerScreen.setCursor(0,0);
@@ -94,7 +92,7 @@ void refreshPowerScreen() {
 
     powerScreen.setTextSize(1);
     powerScreen.println(pwr.powerMode);
-    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.1f%%)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, batChargeCoulomb);
+    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.1f%%)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, pwr.batPercentageCoulomb);
     powerScreen.printf("  I: %.3fma  Ic: %.3fma\r\n", pwr.batCurrent, pwr.batChargeCurrent);
     powerScreen.printf("  Imax: %ima  Bmm: (%.f%%/%.f%%) SB: %i\r\n", pwr.chargeCurrent, pwr.batPercentageMin, pwr.batPercentageMax, currentBrightness);
     powerScreen.printf("USB:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vbusVoltage, pwr.vbusCurrent);
@@ -171,7 +169,6 @@ void changeScreen(int newScreen = -1) {
     }
 
     if (wm.getWebPortalActive()) wm.stopWebPortal();
-    //set_chargeToPowerOff(0);
     
     startupScreen.deleteSprite();
     tallyScreen.deleteSprite();
@@ -199,7 +196,6 @@ void changeScreen(int newScreen = -1) {
             // powerScreen
             powerScreen.createSprite(tft_width, tft_heigth);
             powerScreen.setRotation(3);
-            //set_chargeToPowerOff(900000);
             break;
         case 3:
             // setupScreen
