@@ -29,6 +29,9 @@ void setup () {
     setCpuFrequencyMhz(80); //Save battery by turning down the CPU clock
     btStop();               //Save battery by turning off Bluetooth
 
+    currentBrightness = 50;
+    setBrightness(currentBrightness);
+
     // Set deviceId and deviceName
     uint8_t macAddress[6];
     WiFi.macAddress(macAddress);

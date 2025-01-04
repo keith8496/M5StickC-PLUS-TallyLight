@@ -1,11 +1,12 @@
 struct power {
     char batWarningLevel[17] = "";
     char powerMode[17] = "";
-    float coulomb_count = 0;
+    float coulombCount = 0;
     float batVoltage = 0;
-    float batVoltageMin = 0;
     float batPercentage = 0;
     float batPercentageMin = 0;
+    float batPercentageMax = 0;
+    float batPercentageCoulomb = 0;
     float batCurrent = 0;
     float batChargeCurrent = 0;
     float vbusVoltage = 0;
@@ -22,4 +23,3 @@ extern power pwr;
 
 void power_setup();
 void power_onLoop();
-//void set_chargeToPowerOff(unsigned int delay);

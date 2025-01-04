@@ -92,9 +92,9 @@ void refreshPowerScreen() {
 
     powerScreen.setTextSize(1);
     powerScreen.println(pwr.powerMode);
-    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.4fmAh)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, pwr.coulomb_count);
-    powerScreen.printf("  I: %.3fma  I: %.3fma\r\n", pwr.batCurrent, pwr.batChargeCurrent);
-    powerScreen.printf("  Imax: %ima  Bmin: %.f%%  SB: %i\r\n", pwr.chargeCurrent, pwr.batPercentageMin, currentBrightness);
+    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.1f%%)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, pwr.batPercentageCoulomb);
+    powerScreen.printf("  I: %.3fma  Ic: %.3fma\r\n", pwr.batCurrent, pwr.batChargeCurrent);
+    powerScreen.printf("  Imax: %ima  Bmm: (%.f%%/%.f%%) SB: %i\r\n", pwr.chargeCurrent, pwr.batPercentageMin, pwr.batPercentageMax, currentBrightness);
     powerScreen.printf("USB:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vbusVoltage, pwr.vbusCurrent);
     powerScreen.printf("5V-In:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vinVoltage, pwr.vinCurrent);
     powerScreen.printf("APS:\r\n  V: %.3fv\r\n", pwr.apsVoltage);
@@ -169,7 +169,6 @@ void changeScreen(int newScreen = -1) {
     }
 
     if (wm.getWebPortalActive()) wm.stopWebPortal();
-    //set_chargeToPowerOff(0);
     
     startupScreen.deleteSprite();
     tallyScreen.deleteSprite();
@@ -197,7 +196,6 @@ void changeScreen(int newScreen = -1) {
             // powerScreen
             powerScreen.createSprite(tft_width, tft_heigth);
             powerScreen.setRotation(3);
-            //set_chargeToPowerOff(900000);
             break;
         case 3:
             // setupScreen

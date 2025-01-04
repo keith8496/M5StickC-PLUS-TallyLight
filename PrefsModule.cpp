@@ -39,7 +39,7 @@ void preferences_setup() {
     strcpy(localTimeZone, preferences.getString("localTimeZone", "America/Chicago").c_str());
     strcpy(ntpServer, preferences.getString("ntpServer", "time.apple.com").c_str());
     //batteryCapacity = preferences.getInt("batteryCapacity", 120);
-    pmPowerSaverBatt = preferences.getInt("pmPowerSaverBatt", 30);
+    pmPowerSaverBatt = preferences.getInt("pmPowerSaverBatt", 25);
     pmPowerSaverBright = preferences.getInt("pmPowerSaverBright", 30);
     preferences.end();
 
