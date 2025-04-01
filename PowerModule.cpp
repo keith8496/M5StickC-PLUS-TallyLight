@@ -6,6 +6,10 @@
 #include "PrefsModule.h"
 
 
+const int chargeControlSteps = 9;
+const uint8_t chargeControlArray[chargeControlSteps] = {0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8};
+const int chargeCurrentArray[chargeControlSteps] = {100, 190, 280, 360, 450, 550, 630, 700, 780};
+
 const int md_power_milliseconds = 100;
 const int runningAvgCnt = 200;
 const int md_chargeToOff_milliseconds = 60000;
@@ -14,7 +18,13 @@ float coulomb_adjust = 0;
 power pwr;
 millisDelay md_power;
 millisDelay md_chargeToOff;
+millisDelay md_chargeControlWait;
 RunningAverage ravg_batVoltage(runningAvgCnt);
+
+
+// Define Functions
+void power_onLoop();
+void doPowerManagement();
 
 
 // Function to estimate battery percentage with a non-linear discharge curve
@@ -69,24 +79,57 @@ float getBatteryPercentage(float voltage) {
 }
 
 
-// Define Functions
-void power_onLoop();
-void doPowerManagement();
+int getChargeCurrent() {
+  const uint8_t chargeControlNow = M5.Axp.Read8bit(0x33);
+  for (int i = 0; i < chargeControlSteps; i++) {
+    if (chargeControlNow == chargeControlArray[i]) {
+      return chargeCurrentArray[i];
+    }
+  }
+  return -1; // should never get here
+}
+
+
+/*void setChargeCurrent(int reqChargeCurrent) {
+  
+  if (reqChargeCurrent == 100) {
+    md_chargeControlWait.stop();
+  }
+  if (reqChargeCurrent == getChargeCurrent()) {
+    return;
+  }
+  if (md_chargeControlWait.isRunning()) {
+    return;
+  }
+  
+  uint8_t reqChargeControl = 0xc0;
+  for (int i = 0; i < chargeControlSteps; i++) {
+    if (reqChargeCurrent == chargeCurrentArray[i]) {
+      reqChargeControl = chargeControlArray[i];
+      break;
+    }
+  }
+  
+  M5.Axp.Write1Byte(0x33, reqChargeControl);
+  pwr.chargeCurrent = getChargeCurrent();
+  md_chargeControlWait.start(20000);
+
+}*/
 
 
 void power_setup() {
-    M5.Axp.EnableCoulombcounter();
-    doPowerManagement();
-    ravg_batVoltage.fillValue(M5.Axp.GetBatVoltage(),runningAvgCnt);
-    md_power.start(md_power_milliseconds);
+  M5.Axp.EnableCoulombcounter();
+  doPowerManagement();
+  ravg_batVoltage.fillValue(M5.Axp.GetBatVoltage(),runningAvgCnt);
+  md_power.start(md_power_milliseconds);
 }
 
 
 void power_onLoop() {
-    if (md_power.justFinished()) {
-        md_power.repeat();
-        doPowerManagement();
-    }
+  if (md_power.justFinished()) {
+      md_power.repeat();
+      doPowerManagement();
+  }
 }
 
 
@@ -97,7 +140,7 @@ void doPowerManagement() {
     strcpy(pwr.batWarningLevel, "LOW BATTERY");
   } else {
     strcpy(pwr.batWarningLevel, "");
-  }  
+  }
   
   const float batVoltage = M5.Axp.GetBatVoltage();
   ravg_batVoltage.addValue(batVoltage);
@@ -108,6 +151,7 @@ void doPowerManagement() {
   pwr.batPercentageMax = getBatteryPercentage(ravg_batVoltage.getMaxInBuffer());
   pwr.batCurrent = M5.Axp.GetBatCurrent();
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
+  pwr.chargeCurrent = getChargeCurrent();
   pwr.vbusVoltage = M5.Axp.GetVBusVoltage();
   pwr.vbusCurrent = M5.Axp.GetVBusCurrent();
   pwr.vinVoltage = M5.Axp.GetVinVoltage();
@@ -123,28 +167,26 @@ void doPowerManagement() {
     
     pwr.maxBrightness = 100;
     
-    if ((pwr.batPercentageMin < 70) && (pwr.chargeCurrent != 780)) {
-      pwr.chargeCurrent = 780;
-      M5.Axp.Write1Byte(0x33, 0xc8);
-    } else if (pwr.batPercentageMin < 75 && pwr.chargeCurrent != 700) {
-      pwr.chargeCurrent = 700;
-      M5.Axp.Write1Byte(0x33, 0xc7);
-    } else if (pwr.batPercentageMin < 80 && pwr.chargeCurrent != 630) {
-      pwr.chargeCurrent = 630;
-      M5.Axp.Write1Byte(0x33, 0xc6);
-    } else if (pwr.batPercentageMin < 85 && pwr.chargeCurrent != 550) {
-      pwr.chargeCurrent = 550;
-      M5.Axp.Write1Byte(0x33, 0xc5);
-    } else if (pwr.batPercentageMin < 90 && pwr.chargeCurrent != 450) {
-      pwr.chargeCurrent = 450;
-      M5.Axp.Write1Byte(0x33, 0xc4);
-    } else if (pwr.batPercentageMin < 95 && pwr.chargeCurrent != 360) {
-      pwr.chargeCurrent = 360;
-      M5.Axp.Write1Byte(0x33, 0xc3);
+    /*if (pwr.batPercentageMax < 70 && pwr.chargeCurrent < 780) {
+      setChargeCurrent(780);
+    } else if (pwr.batPercentageMax < 75 && pwr.chargeCurrent < 700) {
+      setChargeCurrent(700);
+    } else if (pwr.batPercentageMax < 80 && pwr.chargeCurrent < 630) {
+      setChargeCurrent(630);
+    } else if (pwr.batPercentageMax < 85 && pwr.chargeCurrent < 550) {
+      setChargeCurrent(550);
+    } else if (pwr.batPercentageMax < 90 && pwr.chargeCurrent < 450) {
+      setChargeCurrent(450);
+    } else if (pwr.batPercentageMax < 95 && pwr.chargeCurrent < 360) {
+      setChargeCurrent(360);
     } else if (pwr.chargeCurrent != 280) {
-      pwr.chargeCurrent = 280;
-      M5.Axp.Write1Byte(0x33, 0xc2);
+      setChargeCurrent(280);
+    }*/
+
+    if (pwr.chargeCurrent != 780) {
+      M5.Axp.Write1Byte(0x33, 0xc8);
     }
+
     
     if (currentBrightness > 20) {
 
@@ -166,7 +208,8 @@ void doPowerManagement() {
       
       if (md_chargeToOff.isRunning()) {
         char powerMode[20];
-        snprintf(powerMode, 20, "Charge to Off (%d)", floor(md_chargeToOff.remaining() / 1000));
+        const int md_chargeToOffRemaining = floor(md_chargeToOff.remaining() / 1000);
+        snprintf(powerMode, 20, "Charge to Off (%i)", md_chargeToOffRemaining);
         strcpy(pwr.powerMode, powerMode);
       } else {
         strcpy(pwr.powerMode, "Charge to Off");
@@ -181,7 +224,6 @@ void doPowerManagement() {
     pwr.maxBrightness = 100;
     
     if (pwr.chargeCurrent != 100) {
-      pwr.chargeCurrent = 100;
       M5.Axp.Write1Byte(0x33, 0xc0);
     }
 
@@ -189,14 +231,13 @@ void doPowerManagement() {
 
     md_chargeToOff.stop();
     if (pwr.chargeCurrent != 100) {
-      pwr.chargeCurrent = 100;
       M5.Axp.Write1Byte(0x33, 0xc0);
     }
 
     if (isBatWarningLevel) {
       strcpy(pwr.powerMode, "Low Battery");
       pwr.maxBrightness = pmPowerSaverBright;
-    } else if (pwr.batPercentageMin <= pmPowerSaverBatt) {
+    } else if (floor(pwr.batPercentageMin) <= pmPowerSaverBatt) {
       strcpy(pwr.powerMode, "Power Saver");
       pwr.maxBrightness = pmPowerSaverBright;
       if (currentBrightness > pwr.maxBrightness) setBrightness(pwr.maxBrightness);

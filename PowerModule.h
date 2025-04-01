@@ -15,7 +15,7 @@ struct power {
     float vinCurrent = 0;
     float apsVoltage = 0;
     float tempInAXP192 = 0;
-    int chargeCurrent = 100;
+    int chargeCurrent = 0;
     int maxBrightness = 100;
 };
 
