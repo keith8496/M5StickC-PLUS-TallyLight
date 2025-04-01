@@ -6,20 +6,17 @@
 #include "PrefsModule.h"
 
 
-const int chargeControlSteps = 9;
-const uint8_t chargeControlArray[chargeControlSteps] = {0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8};
-const int chargeCurrentArray[chargeControlSteps] = {100, 190, 280, 360, 450, 550, 630, 700, 780};
-
-const int md_power_milliseconds = 100;
-const int runningAvgCnt = 200;
-const int md_chargeToOff_milliseconds = 60000;
-float coulomb_adjust = 0;
-
 power pwr;
-millisDelay md_power;
-millisDelay md_chargeToOff;
-millisDelay md_chargeControlWait;
-RunningAverage ravg_batVoltage(runningAvgCnt);
+
+static const int md_power_milliseconds = 100;
+static millisDelay md_power;
+//static millisDelay md_chargeControlWait;
+static const int runningAvgCnt = 200;
+static RunningAverage ravg_batVoltage(runningAvgCnt);
+
+static const int chargeControlSteps = 9;
+static const uint8_t chargeControlArray[chargeControlSteps] = {0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8};
+static const int chargeCurrentArray[chargeControlSteps] = {100, 190, 280, 360, 450, 550, 630, 700, 780};
 
 
 // Define Functions
@@ -78,6 +75,17 @@ float getBatteryPercentage(float voltage) {
     return 0.0;
 }
 
+float getBatPercentageCoulomb() {
+  const float bat = (batteryCapacity + pwr.coulombCount) / batteryCapacity * 100;
+  if (bat > 100.0) {
+    return 100.0;
+  } else if (bat < 0.0) {
+    return 0.0;
+  } else {
+    return bat;
+  }
+}
+
 
 int getChargeCurrent() {
   const uint8_t chargeControlNow = M5.Axp.Read8bit(0x33);
@@ -111,7 +119,7 @@ int getChargeCurrent() {
   }
   
   M5.Axp.Write1Byte(0x33, reqChargeControl);
-  pwr.chargeCurrent = getChargeCurrent();
+  pwr.maxChargeCurrent = getChargeCurrent();
   md_chargeControlWait.start(20000);
 
 }*/
@@ -135,6 +143,10 @@ void power_onLoop() {
 
 void doPowerManagement() {
 
+  const int md_chargeToOff_milliseconds = 60000;
+  static millisDelay md_chargeToOff;
+  static millisDelay md_lowBattery;
+
   const bool isBatWarningLevel = M5.Axp.GetWarningLevel();
   if (isBatWarningLevel) {
     strcpy(pwr.batWarningLevel, "LOW BATTERY");
@@ -151,7 +163,7 @@ void doPowerManagement() {
   pwr.batPercentageMax = getBatteryPercentage(ravg_batVoltage.getMaxInBuffer());
   pwr.batCurrent = M5.Axp.GetBatCurrent();
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
-  pwr.chargeCurrent = getChargeCurrent();
+  pwr.maxChargeCurrent = getChargeCurrent();
   pwr.vbusVoltage = M5.Axp.GetVBusVoltage();
   pwr.vbusCurrent = M5.Axp.GetVBusCurrent();
   pwr.vinVoltage = M5.Axp.GetVinVoltage();
@@ -159,7 +171,7 @@ void doPowerManagement() {
   pwr.apsVoltage = M5.Axp.GetAPSVoltage();
   pwr.tempInAXP192 = M5.Axp.GetTempInAXP192();
   pwr.coulombCount = M5.Axp.GetCoulombData();
-  pwr.batPercentageCoulomb = (2200 + pwr.coulombCount) / 2200 * 100;
+  pwr.batPercentageCoulomb = getBatPercentageCoulomb();
 
 
   // Power Mode
@@ -167,23 +179,23 @@ void doPowerManagement() {
     
     pwr.maxBrightness = 100;
     
-    /*if (pwr.batPercentageMax < 70 && pwr.chargeCurrent < 780) {
+    /*if (pwr.batPercentageMax < 70 && pwr.maxChargeCurrent < 780) {
       setChargeCurrent(780);
-    } else if (pwr.batPercentageMax < 75 && pwr.chargeCurrent < 700) {
+    } else if (pwr.batPercentageMax < 75 && pwr.maxChargeCurrent < 700) {
       setChargeCurrent(700);
-    } else if (pwr.batPercentageMax < 80 && pwr.chargeCurrent < 630) {
+    } else if (pwr.batPercentageMax < 80 && pwr.maxChargeCurrent < 630) {
       setChargeCurrent(630);
-    } else if (pwr.batPercentageMax < 85 && pwr.chargeCurrent < 550) {
+    } else if (pwr.batPercentageMax < 85 && pwr.maxChargeCurrent < 550) {
       setChargeCurrent(550);
-    } else if (pwr.batPercentageMax < 90 && pwr.chargeCurrent < 450) {
+    } else if (pwr.batPercentageMax < 90 && pwr.maxChargeCurrent < 450) {
       setChargeCurrent(450);
-    } else if (pwr.batPercentageMax < 95 && pwr.chargeCurrent < 360) {
+    } else if (pwr.batPercentageMax < 95 && pwr.maxChargeCurrent < 360) {
       setChargeCurrent(360);
-    } else if (pwr.chargeCurrent != 280) {
+    } else if (pwr.maxChargeCurrent != 280) {
       setChargeCurrent(280);
     }*/
 
-    if (pwr.chargeCurrent != 780) {
+    if (pwr.maxChargeCurrent != 780) {
       M5.Axp.Write1Byte(0x33, 0xc8);
     }
 
@@ -223,20 +235,27 @@ void doPowerManagement() {
     strcpy(pwr.powerMode, "USB Charge");
     pwr.maxBrightness = 100;
     
-    if (pwr.chargeCurrent != 100) {
+    if (pwr.maxChargeCurrent != 100) {
       M5.Axp.Write1Byte(0x33, 0xc0);
     }
 
   } else {                              // 3v Battery
 
     md_chargeToOff.stop();
-    if (pwr.chargeCurrent != 100) {
+    if (pwr.maxChargeCurrent != 100) {
       M5.Axp.Write1Byte(0x33, 0xc0);
     }
 
     if (isBatWarningLevel) {
       strcpy(pwr.powerMode, "Low Battery");
       pwr.maxBrightness = pmPowerSaverBright;
+      if (md_lowBattery.justFinished()) {
+        md_lowBattery.repeat();
+        batteryCapacity = pwr.coulombCount*(-1);
+        preferences_save();
+      } else if (!md_lowBattery.isRunning()) {
+        md_lowBattery.start(60000);
+      }
     } else if (floor(pwr.batPercentageMin) <= pmPowerSaverBatt) {
       strcpy(pwr.powerMode, "Power Saver");
       pwr.maxBrightness = pmPowerSaverBright;

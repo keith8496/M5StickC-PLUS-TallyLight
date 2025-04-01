@@ -11,7 +11,7 @@ WiFiManagerParameter wm_nodeRED_ServerPort("nr_ServerPort", "Node-RED Server Por
 WiFiManagerParameter wm_nodeRED_ServerUrl("nr_ServerUrl", "Node-RED Server URL");
 WiFiManagerParameter wm_ntpServer("ntpServer", "NTP Server");
 WiFiManagerParameter wm_localTimeZone("localTimeZone", "Local Timezone (restart req)");
-//WiFiManagerParameter wm_batteryCapacity("batteryCapacity", "Battery Capacity (mAh)");
+WiFiManagerParameter wm_batteryCapacity("batteryCapacity", "Battery Capacity (mAh)");
 WiFiManagerParameter wm_pmPowerSaverBatt("pmPowerSaverBatt", "Power Saver Battery Level");
 WiFiManagerParameter wm_pmPowerSaverBright("pmPowerSaverBright", "Power Saver Screen Brightness");
 
@@ -23,7 +23,7 @@ int nodeRED_ServerPort;
 char nodeRED_ServerUrl[33];
 char localTimeZone[17];
 char ntpServer[33];
-//int batteryCapacity;
+int batteryCapacity;
 int pmPowerSaverBatt;
 int pmPowerSaverBright;
 
@@ -38,7 +38,7 @@ void preferences_setup() {
     strcpy(nodeRED_ServerUrl, preferences.getString("nr_ServerUrl", "/ws/tally").c_str());
     strcpy(localTimeZone, preferences.getString("localTimeZone", "America/Chicago").c_str());
     strcpy(ntpServer, preferences.getString("ntpServer", "time.apple.com").c_str());
-    //batteryCapacity = preferences.getInt("batteryCapacity", 120);
+    batteryCapacity = preferences.getInt("batteryCapacity", 2200);
     pmPowerSaverBatt = preferences.getInt("pmPowerSaverBatt", 25);
     pmPowerSaverBright = preferences.getInt("pmPowerSaverBright", 30);
     preferences.end();
@@ -51,7 +51,7 @@ void preferences_setup() {
     wm.addParameter(&wm_nodeRED_ServerUrl);
     wm.addParameter(&wm_ntpServer);
     wm.addParameter(&wm_localTimeZone);
-    //wm.addParameter(&wm_batteryCapacity);
+    wm.addParameter(&wm_batteryCapacity);
     wm.addParameter(&wm_pmPowerSaverBatt);
     wm.addParameter(&wm_pmPowerSaverBright);
     
@@ -66,8 +66,8 @@ void preferences_setup() {
     wm_nodeRED_ServerUrl.setValue(nodeRED_ServerUrl, sizeof(nodeRED_ServerUrl));
     wm_ntpServer.setValue(ntpServer, sizeof(ntpServer));
     wm_localTimeZone.setValue(localTimeZone, sizeof(localTimeZone));
-    //itoa(batteryCapacity, buff, 10);
-    //wm_batteryCapacity.setValue(buff, sizeof(buff));
+    itoa(batteryCapacity, buff, 10);
+    wm_batteryCapacity.setValue(buff, sizeof(buff));
     itoa(pmPowerSaverBatt, buff, 10);
     wm_pmPowerSaverBatt.setValue(buff, sizeof(buff));
     itoa(pmPowerSaverBright, buff, 10);
@@ -85,7 +85,7 @@ void preferences_save() {
     preferences.putString("nr_ServerUrl", nodeRED_ServerUrl);
     preferences.putString("ntpServer", ntpServer);
     preferences.putString("localTimeZone", localTimeZone);
-    //preferences.putInt("batteryCapacity", batteryCapacity);
+    preferences.putInt("batteryCapacity", batteryCapacity);
     preferences.putInt("pmPowerSaverBatt", pmPowerSaverBatt);
     preferences.putInt("pmPowerSaverBright", pmPowerSaverBright);
     preferences.end();
@@ -101,7 +101,7 @@ void WiFi_onSaveParams() {
     strcpy(nodeRED_ServerUrl, wm_nodeRED_ServerUrl.getValue());
     strcpy(ntpServer, wm_ntpServer.getValue());
     strcpy(localTimeZone, wm_localTimeZone.getValue());
-    //batteryCapacity = atoi(wm_batteryCapacity.getValue());
+    batteryCapacity = atoi(wm_batteryCapacity.getValue());
     pmPowerSaverBatt = atoi(wm_pmPowerSaverBatt.getValue());
     pmPowerSaverBright = atoi(wm_pmPowerSaverBright.getValue());
 
