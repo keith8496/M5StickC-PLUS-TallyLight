@@ -28,7 +28,7 @@ void doPowerManagement();
 float getBatteryPercentage(float voltage) {
     // Voltage-capacity segments for a single-cell LiPo battery
     const int numLevels = 21;
-    const float batLookup[numLevels][2] = {
+    /*const float batLookup[numLevels][2] = {
       {4.20, 100.0}, 
       {4.15, 95.0}, 
       {4.11, 90.0}, 
@@ -51,22 +51,68 @@ float getBatteryPercentage(float voltage) {
       {3.61, 5.0}, 
       {3.27, 0.0}
     };
+    const float batLookup_v2[numLevels][2] = {
+      {4.20, 100.0}, 
+      {4.15, 95.0}, 
+      {4.11, 90.0}, 
+      {4.08, 85.0}, 
+      {4.02, 80.0}, 
+      {3.98, 75.0}, 
+      {3.92, 70.0}, 
+      {3.87, 65.0}, 
+      {3.82, 60.0}, 
+      {3.79, 55.0}, 
+      {3.75, 50.0}, 
+      {3.72, 45.0}, 
+      {3.68, 40.0}, 
+      {3.65, 35.0}, 
+      {3.60, 30.0}, 
+      {3.55, 25.0}, 
+      {3.50, 20.0}, 
+      {3.45, 15.0}, 
+      {3.40, 10.0}, 
+      {3.35, 5.0}, 
+      {3.27, 0.0}
+    };*/
+    const float batLookup_v3[numLevels][3] = {
+      {4.20, 100.0, 2200}, 
+      {4.15, 95.0, 2100}, 
+      {4.10, 90.0, 2000}, 
+      {4.05, 85.0, 1900}, 
+      {4.00, 80.0, 1800}, 
+      {3.95, 75.0, 1700}, 
+      {3.90, 70.0, 1600}, 
+      {3.85, 65.0, 1500}, 
+      {3.80, 60.0, 1400}, 
+      {3.75, 55.0, 1300}, 
+      {3.70, 50.0, 1200}, 
+      {3.65, 45.0, 1100}, 
+      {3.60, 40.0, 1000}, 
+      {3.55, 35.0, 900}, 
+      {3.50, 30.0, 800}, 
+      {3.45, 25.0, 700}, 
+      {3.40, 20.0, 600}, 
+      {3.35, 15.0, 500}, 
+      {3.40, 10.0, 400}, 
+      {3.25, 5.0, 300}, 
+      {3.00, 0.0, 0}
+    };
 
     // Check for out-of-range values
-    if (voltage >= batLookup[0][0]) {
+    if (voltage >= batLookup_v3[0][0]) {
         return 100.0; // Fully charged
-    } else if (voltage <= batLookup[numLevels - 1][0]) {
+    } else if (voltage <= batLookup_v3[numLevels - 1][0]) {
         return 0.0;   // Fully discharged
     }
 
     // Interpolate within the appropriate segment
     for (int i = 0; i < numLevels - 1; i++) {
-        if (voltage <= batLookup[i][0] && voltage > batLookup[i + 1][0]) {
+        if (voltage <= batLookup_v3[i][0] && voltage > batLookup_v3[i + 1][0]) {
             // Linear interpolation between the two points
-            float percentage = batLookup[i][1] +
-                               (voltage - batLookup[i][0]) * 
-                               (batLookup[i + 1][1] - batLookup[i][1]) /
-                               (batLookup[i + 1][0] - batLookup[i][0]);
+            float percentage = batLookup_v3[i][1] +
+                               (voltage - batLookup_v3[i][0]) * 
+                               (batLookup_v3[i + 1][1] - batLookup_v3[i][1]) /
+                               (batLookup_v3[i + 1][0] - batLookup_v3[i][0]);
             return percentage;
         }
     }
