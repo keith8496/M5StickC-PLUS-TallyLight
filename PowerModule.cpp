@@ -25,100 +25,56 @@ void doPowerManagement();
 
 
 // Function to estimate battery percentage with a non-linear discharge curve
-float getBatteryPercentage(float voltage) {
-    // Voltage-capacity segments for a single-cell LiPo battery
-    const int numLevels = 21;
-    /*const float batLookup[numLevels][2] = {
-      {4.20, 100.0}, 
-      {4.15, 95.0}, 
-      {4.11, 90.0}, 
-      {4.08, 85.0}, 
-      {4.02, 80.0}, 
-      {3.98, 75.0}, 
-      {3.95, 70.0}, 
-      {3.91, 65.0}, 
-      {3.87, 60.0}, 
-      {3.85, 55.0}, 
-      {3.84, 50.0}, 
-      {3.82, 45.0}, 
-      {3.80, 40.0}, 
-      {3.79, 35.0}, 
-      {3.77, 30.0}, 
-      {3.75, 25.0}, 
-      {3.73, 20.0}, 
-      {3.71, 15.0}, 
-      {3.69, 10.0}, 
-      {3.61, 5.0}, 
-      {3.27, 0.0}
-    };
-    const float batLookup_v2[numLevels][2] = {
-      {4.20, 100.0}, 
-      {4.15, 95.0}, 
-      {4.11, 90.0}, 
-      {4.08, 85.0}, 
-      {4.02, 80.0}, 
-      {3.98, 75.0}, 
-      {3.92, 70.0}, 
-      {3.87, 65.0}, 
-      {3.82, 60.0}, 
-      {3.79, 55.0}, 
-      {3.75, 50.0}, 
-      {3.72, 45.0}, 
-      {3.68, 40.0}, 
-      {3.65, 35.0}, 
-      {3.60, 30.0}, 
-      {3.55, 25.0}, 
-      {3.50, 20.0}, 
-      {3.45, 15.0}, 
-      {3.40, 10.0}, 
-      {3.35, 5.0}, 
-      {3.27, 0.0}
-    };*/
-    const float batLookup_v3[numLevels][3] = {
-      {4.20, 100.0, 2200}, 
-      {4.15, 95.0, 2100}, 
-      {4.10, 90.0, 2000}, 
-      {4.05, 85.0, 1900}, 
-      {4.00, 80.0, 1800}, 
-      {3.95, 75.0, 1700}, 
-      {3.90, 70.0, 1600}, 
-      {3.85, 65.0, 1500}, 
-      {3.80, 60.0, 1400}, 
-      {3.75, 55.0, 1300}, 
-      {3.70, 50.0, 1200}, 
-      {3.65, 45.0, 1100}, 
-      {3.60, 40.0, 1000}, 
-      {3.55, 35.0, 900}, 
-      {3.50, 30.0, 800}, 
-      {3.45, 25.0, 700}, 
-      {3.40, 20.0, 600}, 
-      {3.35, 15.0, 500}, 
-      {3.40, 10.0, 400}, 
-      {3.25, 5.0, 300}, 
-      {3.00, 0.0, 0}
-    };
+float getBatPercentageVoltage(float voltage) {
+    
+  // Voltage-capacity segments for a single-cell LiPo battery
+  const int numLevels = 21;
+  const float batLookup_v3[numLevels][2] = {
+    {4.20, 100.0}, 
+    {4.12, 95.0}, 
+    {4.04, 90.0}, 
+    {3.98, 85.0}, 
+    {3.92, 80.0}, 
+    {3.86, 75.0}, 
+    {3.80, 70.0}, 
+    {3.75, 65.0}, 
+    {3.71, 60.0}, 
+    {3.68, 55.0}, 
+    {3.66, 50.0}, 
+    {3.64, 45.0}, 
+    {3.62, 40.0}, 
+    {3.61, 35.0}, 
+    {3.60, 30.0}, 
+    {3.56, 25.0}, 
+    {3.54, 20.0}, 
+    {3.50, 15.0}, 
+    {3.47, 10.0}, 
+    {3.40, 5.0}, 
+    {3.00, 0.0}
+  };
 
-    // Check for out-of-range values
-    if (voltage >= batLookup_v3[0][0]) {
-        return 100.0; // Fully charged
-    } else if (voltage <= batLookup_v3[numLevels - 1][0]) {
-        return 0.0;   // Fully discharged
-    }
+  // Check for out-of-range values
+  if (voltage >= batLookup_v3[0][0]) {
+      return 100.0; // Fully charged
+  } else if (voltage <= batLookup_v3[numLevels - 1][0]) {
+      return 0.0;   // Fully discharged
+  }
 
-    // Interpolate within the appropriate segment
-    for (int i = 0; i < numLevels - 1; i++) {
-        if (voltage <= batLookup_v3[i][0] && voltage > batLookup_v3[i + 1][0]) {
-            // Linear interpolation between the two points
-            float percentage = batLookup_v3[i][1] +
-                               (voltage - batLookup_v3[i][0]) * 
-                               (batLookup_v3[i + 1][1] - batLookup_v3[i][1]) /
-                               (batLookup_v3[i + 1][0] - batLookup_v3[i][0]);
-            return percentage;
-        }
-    }
+  // Interpolate within the appropriate segment
+  for (int i = 0; i < numLevels - 1; i++) {
+      if (voltage <= batLookup_v3[i][0] && voltage > batLookup_v3[i + 1][0]) {
+          // Linear interpolation between the two points
+          float percentage = batLookup_v3[i][1] +
+                            (voltage - batLookup_v3[i][0]) * 
+                            (batLookup_v3[i + 1][1] - batLookup_v3[i][1]) /
+                            (batLookup_v3[i + 1][0] - batLookup_v3[i][0]);
+          return percentage;
+      }
+  }
 
-    // Default return (should not reach here)
-    return 0.0;
+  // Default return (should not reach here)
+  return 0.0;
+
 }
 
 float getBatPercentageCoulomb() {
@@ -132,6 +88,13 @@ float getBatPercentageCoulomb() {
   }
 }
 
+/*float getBatPercentage(float voltage) {
+  //const float alpha = 0.7;
+  //const float batPercentageVoltage = getBatPercentageVoltage(voltage);
+  //const float batPercentageCoulomb = getBatPercentageCoulomb();
+  //return (batPercentageVoltage * (1-alpha)) + (batPercentageCoulomb * alpha);
+  return getBatPercentageCoulomb();
+}*/
 
 int getChargeCurrent() {
   const uint8_t chargeControlNow = M5.Axp.Read8bit(0x33);
@@ -200,13 +163,12 @@ void doPowerManagement() {
     strcpy(pwr.batWarningLevel, "");
   }
   
-  const float batVoltage = M5.Axp.GetBatVoltage();
-  ravg_batVoltage.addValue(batVoltage);
-  pwr.batVoltage = batVoltage;
+  pwr.batVoltage = M5.Axp.GetBatVoltage();
+  ravg_batVoltage.addValue(pwr.batVoltage);
   
-  pwr.batPercentage = getBatteryPercentage(ravg_batVoltage.getAverage()); //ravg_batVoltage.getAverageLast(50)
-  pwr.batPercentageMin = getBatteryPercentage(ravg_batVoltage.getMinInBuffer());
-  pwr.batPercentageMax = getBatteryPercentage(ravg_batVoltage.getMaxInBuffer());
+  pwr.batPercentage = getBatPercentageCoulomb();
+  pwr.batPercentageMin = getBatPercentageVoltage(ravg_batVoltage.getMinInBuffer());
+  pwr.batPercentageMax = getBatPercentageVoltage(ravg_batVoltage.getMaxInBuffer());
   pwr.batCurrent = M5.Axp.GetBatCurrent();
   pwr.batChargeCurrent = M5.Axp.GetBatChargeCurrent();
   pwr.maxChargeCurrent = getChargeCurrent();
@@ -217,7 +179,7 @@ void doPowerManagement() {
   pwr.apsVoltage = M5.Axp.GetAPSVoltage();
   pwr.tempInAXP192 = M5.Axp.GetTempInAXP192();
   pwr.coulombCount = M5.Axp.GetCoulombData();
-  pwr.batPercentageCoulomb = getBatPercentageCoulomb();
+  //pwr.batPercentageCoulomb = getBatPercentageCoulomb();
 
 
   // Power Mode

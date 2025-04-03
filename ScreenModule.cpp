@@ -92,7 +92,7 @@ void refreshPowerScreen() {
 
     powerScreen.setTextSize(1);
     powerScreen.println(pwr.powerMode);
-    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%% (%.1f%%)\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage, pwr.batPercentageCoulomb);
+    powerScreen.printf("Bat: %s\r\n  V: %.3fv     %.1f%%\r\n", pwr.batWarningLevel, pwr.batVoltage, pwr.batPercentage);
     powerScreen.printf("  I: %.3fma  Ic: %.3fma\r\n", pwr.batCurrent, pwr.batChargeCurrent);
     powerScreen.printf("  Imax: %ima  Bmm: (%.f%%/%.f%%) SB: %i\r\n", pwr.maxChargeCurrent, pwr.batPercentageMin, pwr.batPercentageMax, currentBrightness);
     powerScreen.printf("USB:\r\n  V: %.3fv  I: %.3fma\r\n", pwr.vbusVoltage, pwr.vbusCurrent);
