@@ -53,7 +53,7 @@ void WiFi_setup () {
             if (M5.BtnA.wasReleased()) wm.stopConfigPortal();
         }
         if (currentScreen == 0) startupLog("Config Portal Stopped...",1);
-        ESP.restart();
+        //ESP.restart();
     }
 
     // ezTime

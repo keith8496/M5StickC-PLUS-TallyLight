@@ -44,8 +44,8 @@ void webSockets_onLoop() {
         doc["MessageData"]["batPercentage"] = pwr.batPercentage;
         doc["MessageData"]["batCurrent"] = pwr.batCurrent;
         doc["MessageData"]["batChargeCurrent"] = pwr.batChargeCurrent;
-        doc["MessageData"]["maxChargeCurrent"] = pwr.chargeCurrent;
-        doc["MessageData"]["batPercentageCoulomb"] = pwr.batPercentageCoulomb;
+        doc["MessageData"]["maxChargeCurrent"] = pwr.maxChargeCurrent;
+        //doc["MessageData"]["batPercentageCoulomb"] = pwr.batPercentageCoulomb;
         doc["MessageData"]["coulombCount"] = pwr.coulombCount;
         doc["MessageData"]["tempInAXP192"] = pwr.tempInAXP192;
         doc["MessageData"]["powerMode"] = pwr.powerMode;

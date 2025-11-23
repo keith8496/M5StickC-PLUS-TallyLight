@@ -6,7 +6,7 @@ struct power {
     float batPercentage = 0;
     float batPercentageMin = 0;
     float batPercentageMax = 0;
-    float batPercentageCoulomb = 0;
+    //float batPercentageCoulomb = 0;
     float batCurrent = 0;
     float batChargeCurrent = 0;
     float vbusVoltage = 0;
@@ -15,7 +15,7 @@ struct power {
     float vinCurrent = 0;
     float apsVoltage = 0;
     float tempInAXP192 = 0;
-    int chargeCurrent = 100;
+    int maxChargeCurrent = 0;
     int maxBrightness = 100;
 };
 
